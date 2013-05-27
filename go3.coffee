@@ -33,6 +33,10 @@ class GameCanvas
     @draw_base()
     @draw_lines()
 
+    @draw_stone([3,3],"R")
+    @draw_stone([7,6],"W")
+    @draw_stone([6,9],"B")
+
 
   draw_base: () ->
     @draw_base_hex()
@@ -113,7 +117,26 @@ class GameCanvas
     return 50 + 44*ab[1]
 
 
-  draw_stone: (a,b,color) ->
+  draw_stone: (ab,color) ->
+    @context.strokeStyle = "#000000"
+    @context.lineWidth = 2
+    @context.fillStyle = @get_rgb(color)
+    @context.beginPath()
+    @context.arc(@get_x(ab),@get_y(ab),17,0,2*Math.PI,false)
+    @context.fill()
+    @context.stroke()
+    @context.closePath()
+
+
+  get_rgb: (color) ->
+    switch color
+      when "R"
+        clr = "#cc3333"
+      when "W"
+        clr = "#f0f0f0"
+      when "B"
+        clr = "#5050cc"
+    return clr
 
 
   remove_stone: (a,b) ->
