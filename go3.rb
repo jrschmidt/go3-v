@@ -12,11 +12,6 @@ get '/' do
 end
 
 
-get '/javascripts/go3.js' do
-  coffee :go3
-end
-
-
 
 class Game
 

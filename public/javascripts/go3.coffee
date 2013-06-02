@@ -261,6 +261,7 @@ class BoardLines
 
 
 mousedown = (e) ->
+  @canvas = document.getElementById('canvas')
   dx = @canvas.offsetLeft
   dy = @canvas.offsetTop
   px = e.pageX
@@ -272,6 +273,7 @@ mousedown = (e) ->
 
 start = () ->
   @zip = new Zipper()
+
 
 window.onload = start
 
