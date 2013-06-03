@@ -52,11 +52,16 @@ Board = (function() {
   Board.prototype.clear_point = function(a, b) {};
 
   Board.prototype.click_handle = function(x, y) {
-    var point;
+    var point, xhr;
     point = this.drawing_object.get_point(x, y);
     if (!(point === [])) {
-      return this.drawing_object.draw_stone(point, "R");
+      this.drawing_object.draw_stone(point, "R");
     }
+    xhr = new XMLHttpRequest();
+    xhr.open('GET', '/hxr-source');
+    xhr.send(null);
+    alert("ready state = " + xhr.readyState);
+    return alert("response text = " + xhr.responseText);
   };
 
   return Board;

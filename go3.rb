@@ -12,6 +12,11 @@ get '/' do
 end
 
 
+get '/hxr-source' do
+  str = hxr_string
+  str
+end
+
 
 class Game
 
@@ -30,3 +35,7 @@ def go_string
 end
 
 
+def hxr_string
+  str = "H X R Test String!!!!"
+  str
+end

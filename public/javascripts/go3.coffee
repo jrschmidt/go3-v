@@ -79,6 +79,11 @@ class Board
   click_handle: (x,y) ->
     point = @drawing_object.get_point(x,y)
     @drawing_object.draw_stone(point,"R") if not (point == [])
+    xhr = new XMLHttpRequest()
+    xhr.open('GET','/hxr-source')
+    xhr.send(null)
+    alert ("ready state = "+xhr.readyState)
+    alert ("response text = "+xhr.responseText)
 
 
 
