@@ -13,7 +13,8 @@ end
 
 
 get '/hxr-source' do
-  str = hxr_string
+  msg = params[:msg]
+  str = hxr_string(msg)
   str
 end
 
@@ -35,7 +36,22 @@ def go_string
 end
 
 
-def hxr_string
-  str = "H X R Test String!!!!"
+def hxr_string(msg)
+  str = "point "
+  str << msg.to_s
   str
 end
+
+
+def hxr_string2(msg)
+  point = ["a","b"]
+  str = "Ruby server received point [ "
+  str << point[0].to_s
+  str << " , "
+  str << point[1].to_s
+  str << "] from the browser"
+  str
+end
+
+
+

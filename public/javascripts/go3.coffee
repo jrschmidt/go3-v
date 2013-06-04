@@ -2,10 +2,11 @@ class Zipper
 
   constructor: () ->
     @bb = new Board()
+    @clickster = new ClickHandler(@bb,@bb.drawing_object,@connection)
 
 
   click: (x,y) ->
-    @bb.click_handle(x,y)
+    @clickster.click_handle(x,y)
 
 
 class Board
@@ -61,6 +62,11 @@ class Board
               [[4,0], [10,6]],
               [[5,0], [10,5]] ]
 
+# FIXME Only fire XHR if click is a gameboard point
+# TODO  Complete this method
+  legal_move: (point) ->
+    return true
+
 
   click: (x,y) ->
     alert("CLICK!!!! "+x+" , "+y)
@@ -76,14 +82,38 @@ class Board
   clear_point: (a,b) ->
 
 
+
+class ClickHandler
+
+  constructor: (game,canvas_object,connection) ->
+    @game = game
+    @canvas_object = canvas_object
+
+
   click_handle: (x,y) ->
-    point = @drawing_object.get_point(x,y)
-    @drawing_object.draw_stone(point,"R") if not (point == [])
-    xhr = new XMLHttpRequest()
-    xhr.open('GET','/hxr-source')
-    xhr.send(null)
-    alert ("ready state = "+xhr.readyState)
-    alert ("response text = "+xhr.responseText)
+    point = @canvas_object.get_point(x,y)
+    if @game.legal_move(point)
+      @canvas_object.draw_stone(point,"R")
+      msg = String(point)
+      @connection = new ServerConnection(msg)
+      @connection.send()
+      @connection.receive()
+
+
+class ServerConnection
+
+  constructor: (msg) ->
+    @xhr = new XMLHttpRequest()
+    url = "/hxr-source?msg="+msg
+    @xhr.open('GET',url)
+
+  send: () ->
+     @xhr.send()
+
+
+  receive: () ->
+    alert ("ready state = "+@xhr.readyState)
+    alert ("RESPONSE: "+@xhr.responseText)
 
 
 
