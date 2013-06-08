@@ -1,25 +1,28 @@
+#
+#   * *  Go3 3-player hex shaped Go game client * *
+#
+#  This application uses a "very thin client" approach. The coffeescript client
+#  script only does three things: draw the board on a canvas element, send the
+#  game point clicked to the server if user clicks on a legal move, and receive
+#  from the server a new set of legal moves.
+
+
 class Zipper
 
   constructor: () ->
     @bb = new Board()
-    @clickster = new ClickHandler(@bb,@bb.drawing_object,@connection)
+    @clickster = new ClickHandler(@bb,@bb.drawing_object)
 
 
   click: (x,y) ->
     @clickster.click_handle(x,y)
-
 
 class Board
 
   constructor: () ->
     @get_board_constants()
     @drawing_object = new GameCanvas(this)
-    @points = []
-    for rr in [0..10]
-      row = []
-      for ss in [@row_start[rr]..@row_end[rr]]
-        row[ss] = 0
-      @points[rr] = row
+    @points_handler = new LegalPlayablePoints(this)
 
 
   get_board_constants: () ->
@@ -62,10 +65,25 @@ class Board
               [[4,0], [10,6]],
               [[5,0], [10,5]] ]
 
-# FIXME Only fire XHR if click is a gameboard point
-# TODO  Complete this method
+
+  init_points: () ->
+    @connection = new ServerConnection()
+    @connection.send()
+    msg = @connection.receive()
+    points = parse_points(msg)
+    return points
+
+
+
+# TODO Add parse_points() method
+
+
+  parse_points: (points_string) ->
+    
+
+
   legal_move: (point) ->
-    return true
+    return @points_handler.legal_move(point)
 
 
   click: (x,y) ->
@@ -83,28 +101,60 @@ class Board
 
 
 
+class LegalPlayablePoints
+
+  constructor: (board) ->
+    @board = board
+    @points = @get_init_legal_moves()
+
+
+  get_init_legal_moves: () ->
+    points = []
+    for i in [0..@board.row_start.length]
+      for j in [@board.row_start[i]..@board.row_end[i]]
+        pp = {}
+        pp.a = i
+        pp.b = j
+        points.push(pp)
+    return points
+
+
+  legal_move: (point) ->
+    point_in = @points.some (p) -> p.a == point[0] and p.b == point[1]
+    alert("legal_move = "+point_in)
+    return point_in
+
+
+  update_legal_moves: () ->
+
+
+
 class ClickHandler
 
-  constructor: (game,canvas_object,connection) ->
+  constructor: (game,canvas_object) ->
     @game = game
     @canvas_object = canvas_object
 
 
   click_handle: (x,y) ->
     point = @canvas_object.get_point(x,y)
+    alert("point = "+point)
     if @game.legal_move(point)
+      alert("legal move")
       @canvas_object.draw_stone(point,"R")
       msg = String(point)
-      @connection = new ServerConnection(msg)
+      @connection = new ServerConnection()
       @connection.send()
+      alert("before @connection.receieve()")
       @connection.receive()
+      alert("after @connection.receieve()")
 
 
 class ServerConnection
 
-  constructor: (msg) ->
+  constructor: () ->
     @xhr = new XMLHttpRequest()
-    url = "/hxr-source?msg="+msg
+    url = "/legal-points"
     @xhr.open('GET',url)
 
   send: () ->
@@ -113,7 +163,9 @@ class ServerConnection
 
   receive: () ->
     alert ("ready state = "+@xhr.readyState)
-    alert ("RESPONSE: "+@xhr.responseText)
+    msg = @xhr.responseText
+    alert ("RESPONSE: "+msg)
+    return msg
 
 
 
