@@ -10,24 +10,36 @@
 class Zipper
 
   constructor: () ->
-    @bb = new Board()
-    @clickster = new ClickHandler(@bb,@bb.drawing_object)
+    @board_specs = new BoardDimensions()
+    @board = new Board(this)
+    @lpp = new LegalPlayablePoints(this)
+    @clickster = new ClickHandler(@lpp,@board.drawing_object)
 
 
   click: (x,y) ->
     @clickster.click_handle(x,y)
 
-class Board
+
+
+class BoardDimensions
 
   constructor: () ->
+    @row_start = [0,0,0,0,0,0,1,2,3,4,5]
+    @row_end = [5,6,7,8,9,10,10,10,10,10,10]
+
+
+
+class Board
+
+  constructor: (main_object) ->
+    @controller = main_object
     @get_board_constants()
     @drawing_object = new GameCanvas(this)
-    @points_handler = new LegalPlayablePoints(this)
 
 
   get_board_constants: () ->
-    @row_start = [0,0,0,0,0,0,1,2,3,4,5]
-    @row_end = [5,6,7,8,9,10,10,10,10,10,10]
+    @row_start = @controller.board_specs.row_start
+    @row_end = @controller.board_specs.row_end
 
     @w_e = [ [[0,0], [5,0]],
             [[0,1], [6,1]],
@@ -66,52 +78,19 @@ class Board
               [[5,0], [10,5]] ]
 
 
-  init_points: () ->
-    @connection = new ServerConnection()
-    @connection.send()
-    msg = @connection.receive()
-    points = parse_points(msg)
-    return points
-
-
-
-# TODO Add parse_points() method
-
-
-  parse_points: (points_string) ->
-    
-
-
-  legal_move: (point) ->
-    return @points_handler.legal_move(point)
-
-
-  click: (x,y) ->
-    alert("CLICK!!!! "+x+" , "+y)
-
-
-  get_stone: (a,b,color) ->
-    return st
-
-
-  put_stone: (a,b,color) ->
-
-
-  clear_point: (a,b) ->
-
-
 
 class LegalPlayablePoints
 
-  constructor: (board) ->
-    @board = board
+  constructor: (main_object) ->
+    @board = main_object.board
+    @board_specs = main_object.board_specs
     @points = @get_init_legal_moves()
 
 
   get_init_legal_moves: () ->
     points = []
-    for i in [0..@board.row_start.length]
-      for j in [@board.row_start[i]..@board.row_end[i]]
+    for i in [0..@board_specs.row_start.length]
+      for j in [@board_specs.row_start[i]..@board_specs.row_end[i]]
         pp = {}
         pp.a = i
         pp.b = j
@@ -125,29 +104,43 @@ class LegalPlayablePoints
     return point_in
 
 
-  update_legal_moves: () ->
+  update_legal_moves: (points_string) ->
+    @points = @parse_points(points_string)
 
+
+  parse_points: (points_string) ->
+    points = []
+    for p in [0..points_string.length/2-1]
+      z = {}
+      z.a = parseInt("0x"+points_string[p*2])
+      z.b = parseInt("0x"+points_string[p*2+1])
+      points.push(z)
+    return points
 
 
 class ClickHandler
 
-  constructor: (game,canvas_object) ->
-    @game = game
+  constructor: (legal_moves_object,canvas_object) ->
+    @lmo = legal_moves_object
     @canvas_object = canvas_object
 
 
   click_handle: (x,y) ->
     point = @canvas_object.get_point(x,y)
     alert("point = "+point)
-    if @game.legal_move(point)
+    if @lmo.legal_move(point)
       alert("legal move")
       @canvas_object.draw_stone(point,"R")
-      msg = String(point)
+      msg_out = String(point)
       @connection = new ServerConnection()
-      @connection.send()
-      alert("before @connection.receieve()")
-      @connection.receive()
-      alert("after @connection.receieve()")
+      @connection.send(msg_out)
+      msg_in = @connection.receive()
+      @update_legal_moves(msg_in)
+      alert ("RESPONSE: "+msg_in)
+
+
+  update_legal_moves: (msg) ->
+    @lmo.update_legal_moves(msg)
 
 
 class ServerConnection
@@ -164,7 +157,6 @@ class ServerConnection
   receive: () ->
     alert ("ready state = "+@xhr.readyState)
     msg = @xhr.responseText
-    alert ("RESPONSE: "+msg)
     return msg
 
 
@@ -177,10 +169,6 @@ class GameCanvas
     @board = board
     @board_base = new BoardBase(this)
     @board_lines = new BoardLines(this)
-
-    @draw_stone([3,3],"R")
-    @draw_stone([7,6],"W")
-    @draw_stone([6,9],"B")
 
 
   get_x: (ab) ->
