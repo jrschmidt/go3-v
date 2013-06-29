@@ -14,12 +14,12 @@ When /^a 'get move' request is made for AI player <(ai)>$/ do |ai|
   @ai = AiPlayer.new
 end
 
-Then /^a move <(move)> is made by AI player <(ai)>$/ do |ai|
+Then /^a move <(move)> is made by AI player <(ai)>$/ do |move,ai|
   @move = @ai.get_move
 end
 
-Then /^the state of <(game)> is changed to reflect the new move$/ do |game|
-  @game.make_move(@ai)
+Then /^the state of <(game)> is changed to reflect the new move <(move)>$/ do |game,move|
+  @game.make_move(@ai,@move)
 end
 
 When /^a 'send_legal_moves' command is made for game <(game)>$/ do |game|
@@ -31,6 +31,6 @@ Then /^a new string <(game_string)> is generated representing the revised legal 
 end
 
 Then /^the string <(game_string)> is sent to the client$/ do |game_string|
-  @game.send_legal_moves(@game_string)
+  @game.send_string(@game_string)
 end
 

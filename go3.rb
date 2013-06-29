@@ -26,8 +26,30 @@ class Game
 
   attr :board
 
+
   def initialize
     @board = Board.new
+  end
+
+
+  def handle_move(player,point)
+
+  end
+
+
+  def make_move(player,point)
+
+  end
+
+
+
+  def send_legal_moves
+
+  end
+
+
+  def send_string(game_string)
+
   end
 
 
@@ -36,6 +58,33 @@ class Game
     str
   end
 
+
+  def get_legal_moves_string
+
+  end
+
+
+end
+
+
+
+class Player
+
+  def get_move
+
+  end
+
+end
+
+
+
+class HumanPlayer < Player
+
+end
+
+
+
+class AiPlayer < Player
 
 end
 

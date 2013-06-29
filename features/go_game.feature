@@ -18,7 +18,7 @@ Feature: 3 Player Hexagonal GO Game
     Given We have a GO game <game>
     When a 'get move' request is made for AI player <ai>
     Then a move <move> is made by AI player <ai>
-    And the state of <game> is changed to reflect the new move
+    And the state of <game> is changed to reflect the new move <move>
 
   Scenario: Send Legal Moves
     Given We have a GO game <game>
