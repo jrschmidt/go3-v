@@ -23,6 +23,7 @@ class Zipper
 
 class BoardDimensions
 
+# FIXME : NEEDS "+1" FIX !!!
   constructor: () ->
     @row_start = [0,0,0,0,0,0,1,2,3,4,5]
     @row_end = [5,6,7,8,9,10,10,10,10,10,10]
@@ -41,6 +42,7 @@ class Board
     @row_start = @controller.board_specs.row_start
     @row_end = @controller.board_specs.row_end
 
+# FIXME : NEEDS "+1" FIX !!!
     @w_e = [ [[0,0], [5,0]],
             [[0,1], [6,1]],
             [[0,2], [7,2]],
@@ -53,6 +55,7 @@ class Board
             [[4,9], [10,9]],
             [[5,10], [10,10]] ]
 
+# FIXME : NEEDS "+1" FIX !!!
     @sw_ne = [ [[0,5], [0,0]],
               [[1,6], [1,0]],
               [[2,7], [2,0]],
@@ -65,6 +68,7 @@ class Board
               [[9,10], [9,4]],
               [[10,10], [10,5]] ]
 
+# FIXME : NEEDS "+1" FIX !!!
     @nw_se = [ [[0,5], [5,10]],
               [[0,4], [6,10]],
               [[0,3], [7,10]],
@@ -87,6 +91,7 @@ class LegalPlayablePoints
     @points = @get_init_legal_moves()
 
 
+# FIXME : NEEDS "+1" FIX !!!
   get_init_legal_moves: () ->
     points = []
     for i in [0..@board_specs.row_start.length]
@@ -100,7 +105,7 @@ class LegalPlayablePoints
 
   legal_move: (point) ->
     point_in = @points.some (p) -> p.a == point[0] and p.b == point[1]
-    alert("legal_move = "+point_in)
+#    alert("legal_move = "+point_in)
     return point_in
 
 
@@ -136,7 +141,7 @@ class ClickHandler
       @connection.send(msg_out)
       msg_in = @connection.receive()
       @update_legal_moves(msg_in)
-      alert ("RESPONSE: "+msg_in)
+      alert (msg_in)
 
 
   update_legal_moves: (msg) ->
@@ -171,14 +176,17 @@ class GameCanvas
     @board_lines = new BoardLines(this)
 
 
+# FIXME : NEEDS "+1" FIX !!!
   get_x: (ab) ->
     return 175 + 50*ab[0] - 25*ab[1]
 
 
+# FIXME : NEEDS "+1" FIX !!!
   get_y: (ab) ->
     return 50 + 44*ab[1]
 
 
+# FIXME : NEEDS "+1" FIX !!!
   get_point: (x,y) ->
     point = []
     a = -1
@@ -199,6 +207,7 @@ class GameCanvas
     return point
 
 
+# FIXME : NEEDS "+1" FIX !!!
   draw_stone: (ab,color) ->
     @context.strokeStyle = "#000000"
     @context.lineWidth = 2
@@ -226,6 +235,7 @@ class GameCanvas
     return clr
 
 
+# FIXME : NEEDS "+1" FIX !!!
   remove_stone: (ab) ->
     xx = @get_x(ab)
     yy = @get_y(ab)
@@ -311,14 +321,17 @@ class BoardLines
     @draw_nw_se_lines()
 
 
+# FIXME : NEEDS "+1" FIX !!!
   draw_w_e_lines: () ->
     @draw_line(@board.w_e[i][0], @board.w_e[i][1]) for i in [0..10]
 
 
+# FIXME : NEEDS "+1" FIX !!!
   draw_sw_ne_lines: () ->
     @draw_line(@board.sw_ne[i][0],@board.sw_ne[i][1]) for i in [0..10]
 
 
+# FIXME : NEEDS "+1" FIX !!!
   draw_nw_se_lines: () ->
     @draw_line(@board.nw_se[i][0],@board.nw_se[i][1]) for i in [0..10]
 

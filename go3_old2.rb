@@ -12,6 +12,10 @@ get '/' do
 end
 
 
+# TODO
+# TODO  Return the set of points that red can legally play on
+# TODO
+
 get '/legal-points' do
   str = @@game.get_string
   str
@@ -103,7 +107,7 @@ class Board
 
   def initialize
     @points = GameBoardPoints.new()
-#    binding.pry
+    binding.pry
   end
 
 
@@ -151,7 +155,7 @@ class GameBoardPoints
       st.upto(ed) {|k| row[k] = :empty}
       @pt_array[i] = row
     end
-#    binding.pry
+    binding.pry
 # TODO
 #    pt = get_empty_points
 #    p_string = all_points_to_string(pt)
@@ -195,7 +199,7 @@ class GameBoardPoints
   def get_string
     points = get_empty_points
     str = all_points_to_string(points)
-#    binding.pry
+    binding.pry
     str
   end
 

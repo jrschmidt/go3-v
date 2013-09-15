@@ -26,6 +26,10 @@ When /^a 'send_legal_moves' command is made for game <(game)>$/ do |game|
   @game.send_legal_moves
 end
 
+When(/^a 'remove_point' command for point <(point)> is made for game <(game)>$/) do |game,point|
+  @game.remove_point(@point)
+end
+
 Then /^a new string <(game_string)> is generated representing the revised legal moves collection$/ do |game_string|
   @game_string = @game.get_legal_moves_string
 end
