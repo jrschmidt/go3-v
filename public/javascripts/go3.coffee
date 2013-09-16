@@ -23,10 +23,9 @@ class Zipper
 
 class BoardDimensions
 
-# FIXME : NEEDS "+1" FIX !!!
   constructor: () ->
-    @row_start = [0,0,0,0,0,0,1,2,3,4,5]
-    @row_end = [5,6,7,8,9,10,10,10,10,10,10]
+    @row_start = [1,1,1,1,1,1,2,3,4,5,6]
+    @row_end = [6,7,8,9,10,11,11,11,11,11,11]
 
 
 
@@ -42,44 +41,41 @@ class Board
     @row_start = @controller.board_specs.row_start
     @row_end = @controller.board_specs.row_end
 
-# FIXME : NEEDS "+1" FIX !!!
-    @w_e = [ [[0,0], [5,0]],
-            [[0,1], [6,1]],
-            [[0,2], [7,2]],
-            [[0,3], [8,3]],
-            [[0,4], [9,4]],
-            [[0,5], [10,5]],
-            [[1,6], [10,6]],
-            [[2,7], [10,7]],
-            [[3,8], [10,8]],
-            [[4,9], [10,9]],
-            [[5,10], [10,10]] ]
+    @w_e = [ [[1,1], [6,1]],
+            [[1,2], [7,2]],
+            [[1,3], [8,3]],
+            [[1,4], [9,4]],
+            [[1,5], [10,5]],
+            [[1,6], [11,6]],
+            [[2,7], [11,7]],
+            [[3,8], [11,8]],
+            [[4,9], [11,9]],
+            [[5,10], [11,10]],
+            [[6,11], [11,11]] ]
 
-# FIXME : NEEDS "+1" FIX !!!
-    @sw_ne = [ [[0,5], [0,0]],
-              [[1,6], [1,0]],
-              [[2,7], [2,0]],
-              [[3,8], [3,0]],
-              [[4,9], [4,0]],
-              [[5,10], [5,0]],
-              [[6,10], [6,1]],
-              [[7,10], [7,2]],
-              [[8,10], [8,3]],
-              [[9,10], [9,4]],
-              [[10,10], [10,5]] ]
+    @sw_ne = [ [[1,6], [1,1]],
+              [[2,7], [2,1]],
+              [[3,8], [3,1]],
+              [[4,9], [4,1]],
+              [[5,10], [5,1]],
+              [[6,11], [6,1]],
+              [[7,11], [7,2]],
+              [[8,11], [8,3]],
+              [[9,11], [9,4]],
+              [[10,11], [10,5]],
+              [[11,11], [11,6]] ]
 
-# FIXME : NEEDS "+1" FIX !!!
-    @nw_se = [ [[0,5], [5,10]],
-              [[0,4], [6,10]],
-              [[0,3], [7,10]],
-              [[0,2], [8,10]],
-              [[0,1], [9,10]],
-              [[0,0], [10,10]],
-              [[1,0], [10,9]],
-              [[2,0], [10,8]],
-              [[3,0], [10,7]],
-              [[4,0], [10,6]],
-              [[5,0], [10,5]] ]
+    @nw_se = [ [[1,6], [6,11]],
+              [[1,5], [7,11]],
+              [[1,4], [8,11]],
+              [[1,3], [9,11]],
+              [[1,2], [10,11]],
+              [[1,1], [11,11]],
+              [[2,1], [11,10]],
+              [[3,1], [11,9]],
+              [[4,1], [11,8]],
+              [[5,1], [11,7]],
+              [[6,1], [11,6]] ]
 
 
 
@@ -91,14 +87,13 @@ class LegalPlayablePoints
     @points = @get_init_legal_moves()
 
 
-# FIXME : NEEDS "+1" FIX !!!
   get_init_legal_moves: () ->
     points = []
-    for i in [0..@board_specs.row_start.length]
+    for i in [0..10]
       for j in [@board_specs.row_start[i]..@board_specs.row_end[i]]
         pp = {}
-        pp.a = i
-        pp.b = j
+        pp.a = j
+        pp.b = i+1
         points.push(pp)
     return points
 
@@ -132,16 +127,15 @@ class ClickHandler
 
   click_handle: (x,y) ->
     point = @canvas_object.get_point(x,y)
-    alert("point = "+point)
     if @lmo.legal_move(point)
-      alert("legal move")
+#      alert("legal move")
       @canvas_object.draw_stone(point,"R")
       msg_out = String(point)
       @connection = new ServerConnection()
       @connection.send(msg_out)
       msg_in = @connection.receive()
       @update_legal_moves(msg_in)
-      alert (msg_in)
+#      alert (msg_in)
 
 
   update_legal_moves: (msg) ->
@@ -176,29 +170,26 @@ class GameCanvas
     @board_lines = new BoardLines(this)
 
 
-# FIXME : NEEDS "+1" FIX !!!
   get_x: (ab) ->
-    return 175 + 50*ab[0] - 25*ab[1]
+    return 150 + 50*ab[0] - 25*ab[1]
 
 
-# FIXME : NEEDS "+1" FIX !!!
   get_y: (ab) ->
-    return 50 + 44*ab[1]
+    return 6 + 44*ab[1]
 
 
-# FIXME : NEEDS "+1" FIX !!!
   get_point: (x,y) ->
     point = []
     a = -1
     b = -1
     r2 = 999
     in_bounds = true
-    b = Math.floor((y-28)/44)
-    a = Math.floor((x-150+25*b)/50)
-    in_bounds = false if b<0
-    in_bounds = false if b>10
-    in_bounds = false if a<@board.row_start[b]
-    in_bounds = false if a>@board.row_end[b]
+    b = Math.floor((y-28)/44)+1
+    a = Math.floor((x-125+25*b)/50)
+    in_bounds = false if b<1
+    in_bounds = false if b>11
+    in_bounds = false if a<@board.row_start[b-1]
+    in_bounds = false if a>@board.row_end[b-1]
     dx = Math.abs(x-@get_x([a,b]))
     dy = Math.abs(y-@.get_y([a,b]))
     r2 = dx*dx+dy*dy
@@ -207,7 +198,6 @@ class GameCanvas
     return point
 
 
-# FIXME : NEEDS "+1" FIX !!!
   draw_stone: (ab,color) ->
     @context.strokeStyle = "#000000"
     @context.lineWidth = 2
@@ -235,7 +225,6 @@ class GameCanvas
     return clr
 
 
-# FIXME : NEEDS "+1" FIX !!!
   remove_stone: (ab) ->
     xx = @get_x(ab)
     yy = @get_y(ab)
@@ -321,17 +310,14 @@ class BoardLines
     @draw_nw_se_lines()
 
 
-# FIXME : NEEDS "+1" FIX !!!
   draw_w_e_lines: () ->
     @draw_line(@board.w_e[i][0], @board.w_e[i][1]) for i in [0..10]
 
 
-# FIXME : NEEDS "+1" FIX !!!
   draw_sw_ne_lines: () ->
     @draw_line(@board.sw_ne[i][0],@board.sw_ne[i][1]) for i in [0..10]
 
 
-# FIXME : NEEDS "+1" FIX !!!
   draw_nw_se_lines: () ->
     @draw_line(@board.nw_se[i][0],@board.nw_se[i][1]) for i in [0..10]
 

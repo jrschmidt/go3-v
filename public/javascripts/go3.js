@@ -19,8 +19,8 @@ Zipper = (function() {
 
 BoardDimensions = (function() {
   function BoardDimensions() {
-    this.row_start = [0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 5];
-    this.row_end = [5, 6, 7, 8, 9, 10, 10, 10, 10, 10, 10];
+    this.row_start = [1, 1, 1, 1, 1, 1, 2, 3, 4, 5, 6];
+    this.row_end = [6, 7, 8, 9, 10, 11, 11, 11, 11, 11, 11];
   }
 
   return BoardDimensions;
@@ -37,9 +37,9 @@ Board = (function() {
   Board.prototype.get_board_constants = function() {
     this.row_start = this.controller.board_specs.row_start;
     this.row_end = this.controller.board_specs.row_end;
-    this.w_e = [[[0, 0], [5, 0]], [[0, 1], [6, 1]], [[0, 2], [7, 2]], [[0, 3], [8, 3]], [[0, 4], [9, 4]], [[0, 5], [10, 5]], [[1, 6], [10, 6]], [[2, 7], [10, 7]], [[3, 8], [10, 8]], [[4, 9], [10, 9]], [[5, 10], [10, 10]]];
-    this.sw_ne = [[[0, 5], [0, 0]], [[1, 6], [1, 0]], [[2, 7], [2, 0]], [[3, 8], [3, 0]], [[4, 9], [4, 0]], [[5, 10], [5, 0]], [[6, 10], [6, 1]], [[7, 10], [7, 2]], [[8, 10], [8, 3]], [[9, 10], [9, 4]], [[10, 10], [10, 5]]];
-    return this.nw_se = [[[0, 5], [5, 10]], [[0, 4], [6, 10]], [[0, 3], [7, 10]], [[0, 2], [8, 10]], [[0, 1], [9, 10]], [[0, 0], [10, 10]], [[1, 0], [10, 9]], [[2, 0], [10, 8]], [[3, 0], [10, 7]], [[4, 0], [10, 6]], [[5, 0], [10, 5]]];
+    this.w_e = [[[1, 1], [6, 1]], [[1, 2], [7, 2]], [[1, 3], [8, 3]], [[1, 4], [9, 4]], [[1, 5], [10, 5]], [[1, 6], [11, 6]], [[2, 7], [11, 7]], [[3, 8], [11, 8]], [[4, 9], [11, 9]], [[5, 10], [11, 10]], [[6, 11], [11, 11]]];
+    this.sw_ne = [[[1, 6], [1, 1]], [[2, 7], [2, 1]], [[3, 8], [3, 1]], [[4, 9], [4, 1]], [[5, 10], [5, 1]], [[6, 11], [6, 1]], [[7, 11], [7, 2]], [[8, 11], [8, 3]], [[9, 11], [9, 4]], [[10, 11], [10, 5]], [[11, 11], [11, 6]]];
+    return this.nw_se = [[[1, 6], [6, 11]], [[1, 5], [7, 11]], [[1, 4], [8, 11]], [[1, 3], [9, 11]], [[1, 2], [10, 11]], [[1, 1], [11, 11]], [[2, 1], [11, 10]], [[3, 1], [11, 9]], [[4, 1], [11, 8]], [[5, 1], [11, 7]], [[6, 1], [11, 6]]];
   };
 
   return Board;
@@ -54,13 +54,13 @@ LegalPlayablePoints = (function() {
   }
 
   LegalPlayablePoints.prototype.get_init_legal_moves = function() {
-    var i, j, points, pp, _i, _j, _ref, _ref1, _ref2;
+    var i, j, points, pp, _i, _j, _ref, _ref1;
     points = [];
-    for (i = _i = 0, _ref = this.board_specs.row_start.length; 0 <= _ref ? _i <= _ref : _i >= _ref; i = 0 <= _ref ? ++_i : --_i) {
-      for (j = _j = _ref1 = this.board_specs.row_start[i], _ref2 = this.board_specs.row_end[i]; _ref1 <= _ref2 ? _j <= _ref2 : _j >= _ref2; j = _ref1 <= _ref2 ? ++_j : --_j) {
+    for (i = _i = 0; _i <= 10; i = ++_i) {
+      for (j = _j = _ref = this.board_specs.row_start[i], _ref1 = this.board_specs.row_end[i]; _ref <= _ref1 ? _j <= _ref1 : _j >= _ref1; j = _ref <= _ref1 ? ++_j : --_j) {
         pp = {};
-        pp.a = i;
-        pp.b = j;
+        pp.a = j;
+        pp.b = i + 1;
         points.push(pp);
       }
     }
@@ -104,16 +104,13 @@ ClickHandler = (function() {
   ClickHandler.prototype.click_handle = function(x, y) {
     var msg_in, msg_out, point;
     point = this.canvas_object.get_point(x, y);
-    alert("point = " + point);
     if (this.lmo.legal_move(point)) {
-      alert("legal move");
       this.canvas_object.draw_stone(point, "R");
       msg_out = String(point);
       this.connection = new ServerConnection();
       this.connection.send(msg_out);
       msg_in = this.connection.receive();
-      this.update_legal_moves(msg_in);
-      return alert(msg_in);
+      return this.update_legal_moves(msg_in);
     }
   };
 
@@ -158,11 +155,11 @@ GameCanvas = (function() {
   }
 
   GameCanvas.prototype.get_x = function(ab) {
-    return 175 + 50 * ab[0] - 25 * ab[1];
+    return 150 + 50 * ab[0] - 25 * ab[1];
   };
 
   GameCanvas.prototype.get_y = function(ab) {
-    return 50 + 44 * ab[1];
+    return 6 + 44 * ab[1];
   };
 
   GameCanvas.prototype.get_point = function(x, y) {
@@ -172,18 +169,18 @@ GameCanvas = (function() {
     b = -1;
     r2 = 999;
     in_bounds = true;
-    b = Math.floor((y - 28) / 44);
-    a = Math.floor((x - 150 + 25 * b) / 50);
-    if (b < 0) {
+    b = Math.floor((y - 28) / 44) + 1;
+    a = Math.floor((x - 125 + 25 * b) / 50);
+    if (b < 1) {
       in_bounds = false;
     }
-    if (b > 10) {
+    if (b > 11) {
       in_bounds = false;
     }
-    if (a < this.board.row_start[b]) {
+    if (a < this.board.row_start[b - 1]) {
       in_bounds = false;
     }
-    if (a > this.board.row_end[b]) {
+    if (a > this.board.row_end[b - 1]) {
       in_bounds = false;
     }
     dx = Math.abs(x - this.get_x([a, b]));

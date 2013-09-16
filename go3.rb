@@ -103,7 +103,6 @@ class Board
 
   def initialize
     @points = GameBoardPoints.new()
-#    binding.pry
   end
 
 
@@ -151,7 +150,6 @@ class GameBoardPoints
       st.upto(ed) {|k| row[k] = :empty}
       @pt_array[i] = row
     end
-#    binding.pry
 # TODO
 #    pt = get_empty_points
 #    p_string = all_points_to_string(pt)
@@ -163,7 +161,7 @@ class GameBoardPoints
     @pt_array.each_index do |i|
       row = @pt_array[i]
       row.each_index do |j|
-        points << [i,j] if row[j] == :empty
+        points << [j,i+1] if row[j] == :empty
       end
     end
     points
