@@ -26,9 +26,4 @@ Feature: 3 Player Hexagonal GO Game
     Then a new string <game_string> is generated representing the revised legal moves collection
     And the string <game_string> is sent to the client
 
-  Scenario: Delete a Point from Legal Moves List
-    Given We have a GO game <game>
-    When a 'remove_point' command for point <point> is made for game <game>
-    Then a new string <game_string> is generated representing the revised legal moves collection
-    And the string <game_string> is sent to the client
 

@@ -88,26 +88,23 @@ end
 class AiPlayer < Player
 
 end
-  # FIXME Board & GameBoardPoints : These classes need to be refactored. What
-  # does the GameBoardPoints class do? Is it the collection of all points on
-  # the game board with the status for each point? Or is it a general purpose
-  # set of points which can be added to or subtracted from?
+
 
 
 class Board
 
   ROW_START = [1,1,1,1,1,1,2,3,4,5,6]
   ROW_END = [6,7,8,9,10,11,11,11,11,11,11]
-
-
+  MIN = 1
+  MAX = 11
 
   def initialize
     @points = GameBoardPoints.new()
   end
 
 
-  def remove_point(point)
-    @points.remove_point(point)
+  def set_point(point,value)
+    @points.set_point(point,value)
   end
 
 
@@ -120,8 +117,7 @@ class Board
     a = point[0]
     b = point[1]
     valid = false
-    # TODO get rid of hard-coded constants
-    if a>=1 && a<= 11
+    if a>=MIN && a<= MAX
       valid = true if b >= ROW_START[a-1] && b <= ROW_END[a-1]
     end
     valid
@@ -134,22 +130,17 @@ end
 
 class GameBoardPoints
 
-  HEX_D = {10 => "a",
-           11 => "b",
-           12 => "c",
-           13 => "d",
-           14 => "e",
-           15 => "f" }
-
   def initialize
-    @pt_array = []
+    @string_builder = PointStringBuilder.new()
+    @pt_array = [nil]
     Board::ROW_START.each_index do |i|
       row = []
       st = Board::ROW_START[i]
       ed = Board::ROW_END[i]
       st.upto(ed) {|k| row[k] = :empty}
-      @pt_array[i] = row
+      @pt_array[i+1] = row
     end
+
 # TODO
 #    pt = get_empty_points
 #    p_string = all_points_to_string(pt)
@@ -158,40 +149,68 @@ class GameBoardPoints
 
   def get_empty_points
     points = []
-    @pt_array.each_index do |i|
+    1.upto(@pt_array.size-1) do |i|
       row = @pt_array[i]
       row.each_index do |j|
-        points << [j,i+1] if row[j] == :empty
+        points << [j,i] if row[j] == :empty
       end
     end
     points
   end
 
 
-  # TODO
-  # complete get_point method to get value of a point
-  # complete set_point method to set a value for a point in the @pt_array[]
+  def find_all_points(value)
+    points = []
+    1.upto(@pt_array.size-1) do |i|
+      row = @pt_array[i]
+      row.each_index do |j|
+        points << [j,i] if row[j] == value
+      end
+    end
+    points
+  end
+
 
   def get_point(point)
-    pt = nil
-    
-
-    pt
-  end
-
-    # TODO need to define what 'remove a point' means or if 'remove_point is
-    # even a valid operation. Obviously, change the :empty value so the point
-    # no longer appears in any list of empty or available points. But unless
-    # we want to have a :not_available value, we should just set the point
-    # directly to a stone color (:red, :white, :blue) or some other value.
-  def remove_point(point)
-    # TODO Cucumber FILLER
+    a = point[0]
+    b = point[1]
+    val = nil
+    row = b > 0 && b <= Board::MAX ? @pt_array[b] : nil
+    val = row.class == Array ? row[a] : nil
+    val
   end
 
 
-  # FIXME Put string functions in another class?
+  def set_point(point,value)
+    a = point[0]
+    b = point[1]
+    row = b > 0 && b <= Board::MAX ? @pt_array[b] : nil
+    row[a] = value if row.class == Array
+  end
+
+
+  # TODO Temporarily, this method returns the set of all empty points. Later
+  #      we will need to add functionality to compute legal points as the game
+  #      progresses.
   def get_string
-    points = get_empty_points
+    @string_builder.get_string(find_all_points(:empty))
+  end
+
+
+end
+
+
+
+class PointStringBuilder
+
+  HEX_D = {10 => "a",
+           11 => "b",
+           12 => "c",
+           13 => "d",
+           14 => "e",
+           15 => "f" }
+
+  def get_string(points)
     str = all_points_to_string(points)
 #    binding.pry
     str
@@ -219,13 +238,6 @@ class GameBoardPoints
 
 end
 
-
-
-def hxr_string(msg)
-  str = "point "
-  str << msg.to_s
-  str
-end
 
 
 def go_string
