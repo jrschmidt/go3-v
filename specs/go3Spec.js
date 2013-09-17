@@ -13,10 +13,31 @@ describe("Test of Go3 browser side code", function() {
       return expect(this.zip.lpp).toEqual(jasmine.any(LegalPlayablePoints));
     });
   });
-  return describe("Board Test", function() {
+  describe("Board Test", function() {
     return it("should create a Board object", function() {
       expect(this.zip.board).toBeDefined;
       return expect(this.zip.board).toEqual(jasmine.any(Board));
+    });
+  });
+  return describe("Click Handling Test", function() {
+    beforeEach(function() {
+      return this.clickster = this.zip.clickster;
+    });
+    it("should create a ClickHandler object", function() {
+      expect(this.clickster).toBeDefined;
+      return expect(this.clickster).toEqual(jasmine.any(ClickHandler));
+    });
+    return describe("Message Builder Test", function() {
+      return it("should encode a gameboard point as a two character hexadecimal string", function() {
+        expect(this.clickster.hex_string([1, 1])).toEqual("11");
+        expect(this.clickster.hex_string([4, 3])).toEqual("43");
+        expect(this.clickster.hex_string([6, 2])).toEqual("62");
+        expect(this.clickster.hex_string([6, 10])).toEqual("6a");
+        expect(this.clickster.hex_string([6, 11])).toEqual("6b");
+        expect(this.clickster.hex_string([10, 4])).toEqual("a4");
+        expect(this.clickster.hex_string([11, 10])).toEqual("ba");
+        return expect(this.clickster.hex_string([11, 11])).toEqual("bb");
+      });
     });
   });
 });

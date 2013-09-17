@@ -128,6 +128,9 @@ class LegalPlayablePoints
 class ClickHandler
 
   constructor: (legal_moves_object,canvas_object) ->
+
+    @hex_d = ["0","1","2","3","4","5","6","7","8","9","a","b"] #[CONSTANTS]
+
     @lmo = legal_moves_object
     @canvas_object = canvas_object
 
@@ -137,7 +140,7 @@ class ClickHandler
     if @lmo.legal_move(point)
 #      alert("legal move")
       @canvas_object.draw_stone(point,"R")
-      msg_out = String(point)
+      msg_out = @hex_string(point)
       @connection = new ServerConnection()
       @connection.send(msg_out)
       msg_in = @connection.receive()
@@ -147,6 +150,20 @@ class ClickHandler
 
   update_legal_moves: (msg) ->
     @lmo.update_legal_moves(msg)
+
+
+  hex_string: (point) ->
+    hx = "00"
+    if point[0]>0 && point[0]<=11 && point[1]>0 && point[1]<=11
+      hx = @hex_digit(point[0]) + @hex_digit(point[1])
+
+
+  hex_digit: (number) ->
+    if number>0 && number <=11
+      hd = @hex_d[number]
+    else hd = "0"
+    hd
+      
 
 
 class ServerConnection

@@ -97,6 +97,7 @@ LegalPlayablePoints = (function() {
 
 ClickHandler = (function() {
   function ClickHandler(legal_moves_object, canvas_object) {
+    this.hex_d = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b"];
     this.lmo = legal_moves_object;
     this.canvas_object = canvas_object;
   }
@@ -106,7 +107,7 @@ ClickHandler = (function() {
     point = this.canvas_object.get_point(x, y);
     if (this.lmo.legal_move(point)) {
       this.canvas_object.draw_stone(point, "R");
-      msg_out = String(point);
+      msg_out = this.hex_string(point);
       this.connection = new ServerConnection();
       this.connection.send(msg_out);
       msg_in = this.connection.receive();
@@ -116,6 +117,24 @@ ClickHandler = (function() {
 
   ClickHandler.prototype.update_legal_moves = function(msg) {
     return this.lmo.update_legal_moves(msg);
+  };
+
+  ClickHandler.prototype.hex_string = function(point) {
+    var hx;
+    hx = "00";
+    if (point[0] > 0 && point[0] <= 11 && point[1] > 0 && point[1] <= 11) {
+      return hx = this.hex_digit(point[0]) + this.hex_digit(point[1]);
+    }
+  };
+
+  ClickHandler.prototype.hex_digit = function(number) {
+    var hd;
+    if (number > 0 && number <= 11) {
+      hd = this.hex_d[number];
+    } else {
+      hd = "0";
+    }
+    return hd;
   };
 
   return ClickHandler;
