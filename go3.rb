@@ -18,6 +18,14 @@ get '/legal-points' do
 end
 
 
+post '/legal-points' do
+  str = @@game.get_string
+  msg_in = request.body.read
+  puts(msg_in)
+  str
+end
+
+
 class Game
 
   attr :board

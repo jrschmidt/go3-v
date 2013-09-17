@@ -127,11 +127,11 @@ ServerConnection = (function() {
     var url;
     this.xhr = new XMLHttpRequest();
     url = "/legal-points";
-    this.xhr.open('GET', url);
+    this.xhr.open('POST', url);
   }
 
-  ServerConnection.prototype.send = function() {
-    return this.xhr.send();
+  ServerConnection.prototype.send = function(msg) {
+    return this.xhr.send(msg);
   };
 
   ServerConnection.prototype.receive = function() {

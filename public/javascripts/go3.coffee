@@ -154,10 +154,10 @@ class ServerConnection
   constructor: () ->
     @xhr = new XMLHttpRequest()
     url = "/legal-points"
-    @xhr.open('GET',url)
+    @xhr.open('POST',url)
 
-  send: () ->
-     @xhr.send()
+  send: (msg) ->
+     @xhr.send(msg)
 
 
   receive: () ->
