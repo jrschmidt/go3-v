@@ -6,9 +6,16 @@ require 'coffee-script'
 
 require 'pry'
 
+set :port, 4533
+
 
 get '/' do
   erb :index
+end
+
+
+get '/javascripts/go3.js' do
+  coffee :go3
 end
 
 
