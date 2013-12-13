@@ -4,11 +4,21 @@ require 'sinatra'
 
 require 'coffee-script'
 
-require 'pry'
+#require 'pry'
+
+set :server, %w[webrick thin mongrel]
+
+set :port, 4533
+
 
 
 get '/' do
   erb :index
+end
+
+
+get '/javascripts/go3.js' do
+  coffee :go3
 end
 
 

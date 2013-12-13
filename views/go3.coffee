@@ -197,7 +197,7 @@ class ServerConnection
 class GameCanvas
 
   constructor: (board) ->
-    @canvas = document.getElementById('canvas')
+    @canvas = document.getElementById('go-board')
     @context = @canvas.getContext('2d')
     @board = board
     @board_base = new BoardBase(this)
@@ -216,7 +216,7 @@ class GameCanvas
     point = []
     a = -1
     b = -1
-    r2 = 999
+    r2 = 999 # TODO Probably can drop initializations for a,b,r2
     in_bounds = true
     b = Math.floor((y-28)/44)+1
     a = Math.floor((x-125+25*b)/50)
@@ -225,7 +225,7 @@ class GameCanvas
     in_bounds = false if a<@board.row_start[b-1]
     in_bounds = false if a>@board.row_end[b-1]
     dx = Math.abs(x-@get_x([a,b]))
-    dy = Math.abs(y-@.get_y([a,b]))
+    dy = Math.abs(y-@get_y([a,b]))
     r2 = dx*dx+dy*dy
     in_bounds = false if r2>530 #(if radius > 23)
     point = [a,b] if (in_bounds == true)
@@ -292,7 +292,7 @@ class BoardBase
 
 
   draw_base: () ->
-    canvas = document.getElementById('canvas')
+    canvas = document.getElementById('go-board')
     @context = canvas.getContext('2d')
     @draw_base_hex()
     @draw_base_margin()
@@ -357,7 +357,7 @@ class BoardLines
 
 
   draw_line: (beg,end) ->
-    canvas = document.getElementById('canvas')
+    canvas = document.getElementById('go-board')
     context = canvas.getContext('2d')
     context.strokeStyle = "#000000"
     context.lineWidth = 3
@@ -368,8 +368,8 @@ class BoardLines
     context.closePath()
 
 
-mousedown = (e) ->
-  @canvas = document.getElementById('canvas')
+@mousedown = (e) ->
+  @canvas = document.getElementById('go-board')
   dx = @canvas.offsetLeft
   dy = @canvas.offsetTop
   px = e.pageX
