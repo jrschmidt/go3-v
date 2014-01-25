@@ -197,7 +197,7 @@ class ServerConnection
 class GameCanvas
 
   constructor: (board) ->
-    @canvas = document.getElementById('canvas')
+    @canvas = document.getElementById('go-board')
     @context = @canvas.getContext('2d')
     @board = board
     @board_base = new BoardBase(this)
@@ -292,7 +292,7 @@ class BoardBase
 
 
   draw_base: () ->
-    canvas = document.getElementById('canvas')
+    canvas = document.getElementById('go-board')
     @context = canvas.getContext('2d')
     @draw_base_hex()
     @draw_base_margin()
@@ -357,7 +357,7 @@ class BoardLines
 
 
   draw_line: (beg,end) ->
-    canvas = document.getElementById('canvas')
+    canvas = document.getElementById('go-board')
     context = canvas.getContext('2d')
     context.strokeStyle = "#000000"
     context.lineWidth = 3
@@ -368,8 +368,8 @@ class BoardLines
     context.closePath()
 
 
-mousedown = (e) ->
-  @canvas = document.getElementById('canvas')
+@mousedown = (e) ->
+  @canvas = document.getElementById('go-board')
   dx = @canvas.offsetLeft
   dy = @canvas.offsetTop
   px = e.pageX

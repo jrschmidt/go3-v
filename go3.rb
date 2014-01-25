@@ -4,7 +4,12 @@ require 'sinatra'
 
 require 'coffee-script'
 
-require 'pry'
+#require 'pry'
+
+set :server, %w[webrick thin mongrel]
+
+set :port, 4533
+
 
 set :port, 4533
 
