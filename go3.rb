@@ -49,23 +49,23 @@ class Game
 
 
   def handle_move(player,point)
-    # TODO Cucumber FILLER
+    # TODO
   end
 
 
   def make_move(player,point)
-    # TODO Cucumber FILLER
+    # TODO
   end
 
 
-    # TODO Cucumber FILLER
+    # TODO
   def remove_point(point)
     @board.remove_point(point)
   end
 
 
   def send_legal_moves
-    # TODO Cucumber FILLER
+    # TODO
   end
 
 
@@ -92,7 +92,7 @@ end
 class Player
 
   def get_move
-    # TODO Cucumber FILLER (at least for AiPlayer)
+    # TODO
   end
 
 end
