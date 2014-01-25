@@ -113,6 +113,8 @@ end
 
 class Board
 
+  attr :points
+
   ROW_START = [1,1,1,1,1,1,2,3,4,5,6]
   ROW_END = [6,7,8,9,10,11,11,11,11,11,11]
   MIN = 1
