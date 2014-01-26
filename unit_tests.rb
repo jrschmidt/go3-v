@@ -12,6 +12,8 @@ class Go3Test < Test::Unit::TestCase
     Sinatra::Application
   end
 
+  # Tests Part One - Board Point and Stone Methods
+
   def test_valid_point
     game = Game.new
     board = game.board
@@ -100,6 +102,23 @@ class Go3Test < Test::Unit::TestCase
     assert_equal points.find_all_points(:white).size, 3
     assert_equal points.find_all_points(:blue).size, 4
     assert_equal points.find_all_points(:empty).size, 82
+  end
+
+
+  # Tests Part Two - Game Analysis Methods
+
+  def test_get_all_groups
+    game = Game.new
+    groups = game.analyzer.get_all_groups()
+
+    assert_equal groups.class, Hash
+
+    red = groups[:red]
+    white = groups[:white]
+    blue = groups[:blue]
+    assert_equal red.class, Array
+    assert_equal white.class, Array
+    assert_equal blue.class, Array
   end
 
 

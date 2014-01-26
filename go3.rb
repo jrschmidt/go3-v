@@ -40,11 +40,12 @@ end
 
 class Game
 
-  attr :board
+  attr :board, :analyzer
 
 
   def initialize
     @board = Board.new
+    @analyzer = GameAnalyzer.new(self)
   end
 
 
@@ -260,6 +261,20 @@ class PointStringBuilder
 
 end
 
+
+class GameAnalyzer
+
+  def initialize(game_object)
+    @game = game_object
+    @board = @game.board
+    @points = @board.points
+  end
+
+  def get_all_groups
+    groups = {red: [], white: [], blue: []}
+  end
+
+end
 
 
 def go_string
