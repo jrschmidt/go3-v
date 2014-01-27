@@ -45,7 +45,7 @@ class Game
 
   def initialize
     @board = Board.new
-    @analyzer = GameAnalyzer.new(self)
+    @analyzer = GroupAnalyzer.new(self)
   end
 
 
@@ -77,7 +77,7 @@ class Game
 
   def get_string
     str = @board.get_points_string
-    str
+    return str
   end
 
 
@@ -137,13 +137,17 @@ class Board
 
 
   def valid_point?(point)
-    a = point[0]
-    b = point[1]
     valid = false
-    if a>=MIN && a<= MAX
-      valid = true if b >= ROW_START[a-1] && b <= ROW_END[a-1]
+
+    if point.class == Array && point.size == 2 && point.count {|p| p.class == Fixnum} == 2
+      a = point[0]
+      b = point[1]
+      if a>=MIN && a<= MAX
+        valid = true if b >= ROW_START[a-1] && b <= ROW_END[a-1]
+      end
     end
-    valid
+
+    return valid
   end
 
 
@@ -164,9 +168,9 @@ class GameBoardPoints
       @pt_array[i+1] = row
     end
 
-# TODO
-#    pt = get_empty_points
-#    p_string = all_points_to_string(pt)
+    # TODO
+    #    pt = get_empty_points
+    #    p_string = all_points_to_string(pt)
   end
 
 
@@ -178,7 +182,7 @@ class GameBoardPoints
         points << [j,i] if row[j] == :empty
       end
     end
-    points
+    return points
   end
 
 
@@ -190,7 +194,7 @@ class GameBoardPoints
         points << [j,i] if row[j] == value
       end
     end
-    points
+    return points
   end
 
 
@@ -200,7 +204,7 @@ class GameBoardPoints
     val = nil
     row = b > 0 && b <= Board::MAX ? @pt_array[b] : nil
     val = row.class == Array ? row[a] : nil
-    val
+    return val
   end
 
 
@@ -236,33 +240,33 @@ class PointStringBuilder
   def get_string(points)
     str = all_points_to_string(points)
 #    binding.pry
-    str
+    return str
   end
 
 
   def all_points_to_string(points)
     str = points.map {|pt| point_to_string(pt)}.reduce("",:<<) {|pt_str| pt_str}
-    str
+    return str
   end
 
 
   def point_to_string(point)
     str = hex_digit(point[0]) + hex_digit(point[1])
-    str
+    return str
   end
 
 
   def hex_digit(n)
     dd = n<10 ? n.to_s : HEX_D[n] if n >= 0 && n < 16
     dd = " " if n<0 || n>15
-    dd
+    return dd
   end
 
 
 end
 
 
-class GameAnalyzer
+class GroupAnalyzer
 
   def initialize(game_object)
     @game = game_object
@@ -283,16 +287,37 @@ class GameAnalyzer
     adj = false if [pt1,pt2].flatten.count {|z| z.class == Fixnum} != 4
     adj = false if @board.valid_point?(pt1) == false || @board.valid_point?(pt2) == false
 
-    a1 = pt1[0]
-    b1 = pt1[1]
-    a2 = pt2[0]
-    b2 = pt2[1]
-    adj = false if (a1-a2).abs > 1 || (b1-b2).abs > 1
-    adj = false if (a1 == a2) && (b1 == b2)
-    adj = false if (a1 == a2+1) && (b1 == b2-1)
-    adj = false if (a1 == a2-1) && (b1 == b2+1)
+    if adj == true
+      a1 = pt1[0]
+      b1 = pt1[1]
+      a2 = pt2[0]
+      b2 = pt2[1]
+      adj = false if (a1-a2).abs > 1 || (b1-b2).abs > 1
+      adj = false if (a1 == a2) && (b1 == b2)
+      adj = false if (a1 == a2+1) && (b1 == b2-1)
+      adj = false if (a1 == a2-1) && (b1 == b2+1)
+    end
+
     return adj
   end
+
+  def all_adjacent_points(p)
+    # Returns an array containing the set of adjacent valid points in
+    # clockwise order as follows: :right_up, :right, :right_dn, :left_dn,
+    # :left, :left_up  
+
+    points = []
+    if @board.valid_point?(p)
+      a = p[0]
+      b = p[1]
+      for delta in [ [0,-1], [1,0], [1,1], [0,1], [-1,0], [-1,-1] ]
+        z = [ (a + delta[0]), (b + delta[1]) ]
+        points << z if @board.valid_point?(z)
+      end
+    end
+    return points
+  end
+
 
 end
 
@@ -300,7 +325,7 @@ end
 def go_string
   @@game = Game.new if defined?(@@game) == nil
   str = @@game.get_string
-  str
+  return str
 end
 
 
