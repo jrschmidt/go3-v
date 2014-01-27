@@ -107,10 +107,51 @@ class Go3Test < Test::Unit::TestCase
 
   # Tests Part Two - Game Analysis Methods
 
+  def test_adjacent_points
+    game = Game.new
+    analyzer = game.analyzer
+    board = game.board
+
+    assert analyzer.adjacent?([5,8],[5,7])
+    assert analyzer.adjacent?([5,8],[4,7])
+    assert analyzer.adjacent?([5,8],[4,8])
+    assert analyzer.adjacent?([5,8],[5,9])
+    assert analyzer.adjacent?([5,8],[6,9])
+    assert analyzer.adjacent?([5,8],[6,8])
+    assert_equal(analyzer.adjacent?([5,8],[5,3]), false)
+    assert_equal(analyzer.adjacent?([5,8],[11,9]), false)
+    assert_equal(analyzer.adjacent?([5,8],[1,2]), false)
+    assert_equal(analyzer.adjacent?([3,1],[3,0]), false)
+  end
+
   def test_get_all_groups
     game = Game.new
-    groups = game.analyzer.get_all_groups()
+    board = game.board
 
+    board.set_point([3,4], :red)
+    board.set_point([4,6], :red)
+    board.set_point([4,7], :red)
+    board.set_point([4,5], :red)
+    board.set_point([2,4], :red)
+    board.set_point([3,7], :red)
+    board.set_point([5,7], :red)
+    board.set_point([7,4], :white)
+    board.set_point([8,5], :white)
+    board.set_point([5,3], :blue)
+    board.set_point([3,3], :white)
+    board.set_point([2,3], :white)
+    board.set_point([3,2], :white)
+    board.set_point([3,5], :blue)
+    board.set_point([3,6], :blue)
+    board.set_point([10,8], :white)
+    board.set_point([10,7], :white)
+    board.set_point([7,8], :blue)
+    board.set_point([9,9], :blue)
+    board.set_point([7,9], :blue)
+    board.set_point([8,8], :blue)
+
+
+    groups = game.analyzer.get_all_groups()
     assert_equal groups.class, Hash
 
     red = groups[:red]

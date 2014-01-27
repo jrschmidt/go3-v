@@ -268,10 +268,30 @@ class GameAnalyzer
     @game = game_object
     @board = @game.board
     @points = @board.points
+
+    @groups = {red: [], white: [], blue: []}
   end
 
   def get_all_groups
-    groups = {red: [], white: [], blue: []}
+    return @groups
+  end
+
+  def adjacent?(pt1,pt2)
+    adj = true
+    adj = false if pt1.class != Array || pt2.class != Array
+    adj = false if pt1.size != 2 || pt2.size != 2
+    adj = false if [pt1,pt2].flatten.count {|z| z.class == Fixnum} != 4
+    adj = false if @board.valid_point?(pt1) == false || @board.valid_point?(pt2) == false
+
+    a1 = pt1[0]
+    b1 = pt1[1]
+    a2 = pt2[0]
+    b2 = pt2[1]
+    adj = false if (a1-a2).abs > 1 || (b1-b2).abs > 1
+    adj = false if (a1 == a2) && (b1 == b2)
+    adj = false if (a1 == a2+1) && (b1 == b2-1)
+    adj = false if (a1 == a2-1) && (b1 == b2+1)
+    return adj
   end
 
 end
