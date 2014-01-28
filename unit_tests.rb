@@ -12,6 +12,7 @@ class Go3Test < Test::Unit::TestCase
     Sinatra::Application
   end
 
+
   # Tests Part One - Board Point and Stone Methods
 
   def test_valid_point
@@ -169,28 +170,7 @@ class Go3Test < Test::Unit::TestCase
     game = Game.new
     board = game.board
 
-    board.set_point([3,4], :red)
-    board.set_point([4,6], :red)
-    board.set_point([4,7], :red)
-    board.set_point([4,5], :red)
-    board.set_point([2,4], :red)
-    board.set_point([3,7], :red)
-    board.set_point([5,7], :red)
-    board.set_point([7,4], :white)
-    board.set_point([8,5], :white)
-    board.set_point([5,3], :blue)
-    board.set_point([3,3], :white)
-    board.set_point([2,3], :white)
-    board.set_point([3,2], :white)
-    board.set_point([3,5], :blue)
-    board.set_point([3,6], :blue)
-    board.set_point([10,8], :white)
-    board.set_point([10,7], :white)
-    board.set_point([7,8], :blue)
-    board.set_point([9,9], :blue)
-    board.set_point([7,9], :blue)
-    board.set_point([8,8], :blue)
-
+    set_test_groups(board,1)
 
     groups = game.analyzer.get_all_groups()
     assert_equal groups.class, Hash
@@ -203,7 +183,116 @@ class Go3Test < Test::Unit::TestCase
     assert_equal blue.class, Array
   end
 
+  def test_find_group_airpoints
+    game = Game.new
+    board = game.board
+
+    set_test_groups(board,1)
+
+    # Red Group #1 - 7 stones, 13 airpoints
+    red1 = [ [3,4], [4,6], [4,7], [4,5], [2,4], [3,7], [5,7] ]
+    spaces = game.analyzer.find_group_airpoints(red1)
+    assert_equal spaces.size, 13
+
+    expected = [ [4,4], [5,5], [5,6], [6,7], [6,8], [5,8], [4,8], [3,8], [2,7], [2,6], [2,5], [1,4], [1,3] ]
+    for pt in expected
+      assert(spaces.include?(pt))
+    end
+
+    # White Group #1 - 2 stones, 8 airpoints
+    white1 = [ [7,4], [8,5] ]
+    spaces = game.analyzer.find_group_airpoints(white1)
+    assert_equal spaces.size, 8
+
+    expected = [ [6,3], [7,3], [8,4], [9,5], [9,6], [8,6], [7,5], [6,4] ]
+    for pt in expected
+      assert(spaces.include?(pt))
+    end
+
+    # White Group #2 - 3 stones, 8 airpoints
+    white2 = [ [3,3], [2,3], [3,2] ]
+    spaces = game.analyzer.find_group_airpoints(white2)
+    assert_equal spaces.size, 8
+
+    expected = [ [1,3], [1,2], [2,2], [2,1], [3,1], [4,2], [4,3], [4,4] ]
+    for pt in expected
+      assert(spaces.include?(pt))
+    end
+
+    # White Group #3 - 2 stones, 8 airpoints
+    white3 = [ [10,8], [10,7] ]
+    spaces = game.analyzer.find_group_airpoints(white3)
+    assert_equal spaces.size, 8
+
+    expected = [ [9,6], [10,6], [11,7], [11,8], [11,9], [10,9], [9,8], [9,7] ]
+    for pt in expected
+      assert(spaces.include?(pt))
+    end
+
+    # Blue Group #1 - 1 stone, 6 airpoints
+    blue1 = [ [5,3] ]
+    spaces = game.analyzer.find_group_airpoints(blue1)
+    assert_equal spaces.size, 6
+
+    expected = [ [5,2], [6,3], [6,4], [5,4], [4,3], [4,2] ]
+    for pt in expected
+      assert(spaces.include?(pt))
+    end
+
+    # Blue Group #2 - 2 stones, 2 airpoints
+    blue2 = [ [3,5], [3,6] ]
+    spaces = game.analyzer.find_group_airpoints(blue2)
+    assert_equal spaces.size, 2
+
+    expected = [ [2,5], [2,6] ]
+    for pt in expected
+      assert(spaces.include?(pt))
+    end
+
+    # Blue Group #3 - 4 stones, 12 airpoints
+    blue3 = [ [7,8], [9,9], [7,9], [8,8] ]
+    spaces = game.analyzer.find_group_airpoints(blue3)
+    assert_equal spaces.size, 12
+
+    expected = [ [6,7], [7,7], [8,7], [9,8], [10,9], [10,10], [9,10], [8,9], [8,10], [7,10], [6,9], [6,8] ]
+    for pt in expected
+      assert(spaces.include?(pt))
+    end
+
+  end
+
+
+  # Utility Methods for Tests
+
+  def set_test_groups(board, index)
+
+    if index == 1
+      board.set_point([3,4], :red)
+      board.set_point([4,6], :red)
+      board.set_point([4,7], :red)
+      board.set_point([4,5], :red)
+      board.set_point([2,4], :red)
+      board.set_point([3,7], :red)
+      board.set_point([5,7], :red)
+      board.set_point([7,4], :white)
+      board.set_point([8,5], :white)
+      board.set_point([5,3], :blue)
+      board.set_point([3,3], :white)
+      board.set_point([2,3], :white)
+      board.set_point([3,2], :white)
+      board.set_point([3,5], :blue)
+      board.set_point([3,6], :blue)
+      board.set_point([10,8], :white)
+      board.set_point([10,7], :white)
+      board.set_point([7,8], :blue)
+      board.set_point([9,9], :blue)
+      board.set_point([7,9], :blue)
+      board.set_point([8,8], :blue)
+    end
+  end
+
 
 end
+
 
 

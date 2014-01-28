@@ -318,6 +318,15 @@ class GroupAnalyzer
     return points
   end
 
+  def find_group_airpoints(group)
+    air = []
+    for stone in group
+      air << all_adjacent_points(stone).select {|pt| @board.points.get_point(pt) == :empty}
+    end
+    air.flatten!(1).uniq!
+    return air
+  end
+
 
 end
 
