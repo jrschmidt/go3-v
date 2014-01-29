@@ -49,6 +49,7 @@ class Go3Test < Test::Unit::TestCase
     assert_equal board.valid_point?([14,6]), false
   end
 
+
   def test_get_point
     game = Game.new
     points = game.board.points
@@ -59,6 +60,7 @@ class Go3Test < Test::Unit::TestCase
     assert_equal points.get_point([9,4]), :empty
     assert_equal points.get_point([8,11]), :empty
   end
+
 
   def test_set_point
     game = Game.new
@@ -83,6 +85,7 @@ class Go3Test < Test::Unit::TestCase
     assert_equal  points.get_point([6,3]), :empty
   end
 
+
   def test_find_all_points
     game = Game.new
     board = game.board
@@ -104,6 +107,7 @@ class Go3Test < Test::Unit::TestCase
     assert_equal points.find_all_points(:blue).size, 4
     assert_equal points.find_all_points(:empty).size, 82
   end
+
 
   def test_adjacent_points
     game = Game.new
@@ -133,6 +137,7 @@ class Go3Test < Test::Unit::TestCase
     assert_equal(analyzer.adjacent?([2,6],[9,9]), false)
     assert_equal(analyzer.adjacent?([7,10],[3,8]), false)
   end
+
 
   def test_all_adjacent_points
     game = Game.new
@@ -183,6 +188,7 @@ class Go3Test < Test::Unit::TestCase
     assert_equal blue.class, Array
   end
 
+
   def test_find_group_airpoints
     game = Game.new
     board = game.board
@@ -190,75 +196,41 @@ class Go3Test < Test::Unit::TestCase
     set_test_groups(board,1)
 
     # Red Group #1 - 7 stones, 13 airpoints
-    red1 = [ [3,4], [4,6], [4,7], [4,5], [2,4], [3,7], [5,7] ]
-    spaces = game.analyzer.find_group_airpoints(red1)
-    assert_equal spaces.size, 13
-
-    expected = [ [4,4], [5,5], [5,6], [6,7], [6,8], [5,8], [4,8], [3,8], [2,7], [2,6], [2,5], [1,4], [1,3] ]
-    for pt in expected
-      assert(spaces.include?(pt))
-    end
+    red1 = { stones: [ [3,4], [4,6], [4,7], [4,5], [2,4], [3,7], [5,7] ],
+             expected_points: [ [4,4], [5,5], [5,6], [6,7], [6,8], [5,8], [4,8], [3,8], [2,7], [2,6], [2,5], [1,4], [1,3] ] }
 
     # White Group #1 - 2 stones, 8 airpoints
-    white1 = [ [7,4], [8,5] ]
-    spaces = game.analyzer.find_group_airpoints(white1)
-    assert_equal spaces.size, 8
-
-    expected = [ [6,3], [7,3], [8,4], [9,5], [9,6], [8,6], [7,5], [6,4] ]
-    for pt in expected
-      assert(spaces.include?(pt))
-    end
+    white1 = { stones: [ [7,4], [8,5] ],
+               expected_points: [ [6,3], [7,3], [8,4], [9,5], [9,6], [8,6], [7,5], [6,4] ] }
 
     # White Group #2 - 3 stones, 8 airpoints
-    white2 = [ [3,3], [2,3], [3,2] ]
-    spaces = game.analyzer.find_group_airpoints(white2)
-    assert_equal spaces.size, 8
-
-    expected = [ [1,3], [1,2], [2,2], [2,1], [3,1], [4,2], [4,3], [4,4] ]
-    for pt in expected
-      assert(spaces.include?(pt))
-    end
+    white2 = { stones: [ [3,3], [2,3], [3,2] ] ,
+               expected_points: [ [1,3], [1,2], [2,2], [2,1], [3,1], [4,2], [4,3], [4,4] ] }
 
     # White Group #3 - 2 stones, 8 airpoints
-    white3 = [ [10,8], [10,7] ]
-    spaces = game.analyzer.find_group_airpoints(white3)
-    assert_equal spaces.size, 8
-
-    expected = [ [9,6], [10,6], [11,7], [11,8], [11,9], [10,9], [9,8], [9,7] ]
-    for pt in expected
-      assert(spaces.include?(pt))
-    end
+    white3 = { stones: [ [10,8], [10,7] ] ,
+             expected_points: [ [9,6], [10,6], [11,7], [11,8], [11,9], [10,9], [9,8], [9,7] ] }
 
     # Blue Group #1 - 1 stone, 6 airpoints
-    blue1 = [ [5,3] ]
-    spaces = game.analyzer.find_group_airpoints(blue1)
-    assert_equal spaces.size, 6
-
-    expected = [ [5,2], [6,3], [6,4], [5,4], [4,3], [4,2] ]
-    for pt in expected
-      assert(spaces.include?(pt))
-    end
+    blue1 = { stones: [ [5,3] ] ,
+             expected_points: [ [5,2], [6,3], [6,4], [5,4], [4,3], [4,2] ] }
 
     # Blue Group #2 - 2 stones, 2 airpoints
-    blue2 = [ [3,5], [3,6] ]
-    spaces = game.analyzer.find_group_airpoints(blue2)
-    assert_equal spaces.size, 2
-
-    expected = [ [2,5], [2,6] ]
-    for pt in expected
-      assert(spaces.include?(pt))
-    end
+    blue2 = { stones: [ [3,5], [3,6] ] ,
+             expected_points: [ [2,5], [2,6] ] }
 
     # Blue Group #3 - 4 stones, 12 airpoints
-    blue3 = [ [7,8], [9,9], [7,9], [8,8] ]
-    spaces = game.analyzer.find_group_airpoints(blue3)
-    assert_equal spaces.size, 12
+    blue3 = { stones: [ [7,8], [9,9], [7,9], [8,8] ] ,
+             expected_points: [ [6,7], [7,7], [8,7], [9,8], [10,9], [10,10], [9,10], [8,9], [8,10], [7,10], [6,9], [6,8] ] }
 
-    expected = [ [6,7], [7,7], [8,7], [9,8], [10,9], [10,10], [9,10], [8,9], [8,10], [7,10], [6,9], [6,8] ]
-    for pt in expected
-      assert(spaces.include?(pt))
+    groups = [red1, white1, white2, white3, blue1, blue2, blue3]
+    for group in groups
+      spaces = game.analyzer.find_group_airpoints(group[:stones])
+      assert_equal spaces.size, group[:expected_points].size
+      for pt in group[:expected_points]
+        assert(spaces.include?(pt))
+      end
     end
-
   end
 
 
