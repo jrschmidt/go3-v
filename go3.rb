@@ -11,9 +11,6 @@ set :server, %w[webrick thin mongrel]
 set :port, 4533
 
 
-set :port, 4533
-
-
 get '/' do
   erb :index
 end
@@ -156,6 +153,8 @@ end
 
 
 class GameBoardPoints
+  include Enumerable
+
 
   def initialize
     @string_builder = PointStringBuilder.new()
@@ -164,13 +163,26 @@ class GameBoardPoints
       row = []
       st = Board::ROW_START[i]
       ed = Board::ROW_END[i]
-      st.upto(ed) {|k| row[k] = :empty}
-      @pt_array[i+1] = row
+      st.upto(ed) {|k| row[k] = :empty} #TODO The 'row' is actually a diagonal 'column'.
+      @pt_array[i+1] = row #TODO Why is this i & k when the other methods use i & j?
     end
 
     # TODO
     #    pt = get_empty_points
     #    p_string = all_points_to_string(pt)
+  end
+
+
+  def each
+    1.upto(@pt_array.size-1) do |i|
+      row = @pt_array[i]
+      row.each_index do |j|
+        if not row[j] == nil
+          pt = {point: [j,i], value: row[j]}
+          yield pt
+        end
+      end
+    end
   end
 
 
