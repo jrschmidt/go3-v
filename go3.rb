@@ -331,7 +331,7 @@ class GroupAnalyzer
   end
 
 
-  def get_all_groups
+  def find_all_groups
     groups = {red: [], white: [], blue: []}
 
     @points.each do |point|

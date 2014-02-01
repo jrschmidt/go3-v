@@ -181,13 +181,13 @@ class Go3Test < Test::Unit::TestCase
 
   # Tests Part Two - Game Analysis Methods
 
-  def test_get_all_groups
+  def test_find_all_groups
     game = Game.new
     board = game.board
 
     set_test_groups(board,1)
 
-    groups = game.analyzer.get_all_groups()
+    groups = game.analyzer.find_all_groups()
     assert_equal groups.class, Hash
 
     red = groups[:red]
@@ -228,7 +228,9 @@ class Go3Test < Test::Unit::TestCase
   end
 
 
-  def test_find_group_airpoints
+  def test_find_group_airpoints_1
+    # (1) Use hard-coded groups
+
     game = Game.new
     board = game.board
 
@@ -268,6 +270,39 @@ class Go3Test < Test::Unit::TestCase
       assert_equal spaces.size, group[:expected_points].size
       for pt in group[:expected_points]
         assert(spaces.include?(pt))
+      end
+    end
+  end
+
+
+  def test_find_group_airpoints_2
+    # (2) Use groups returned by find_all_groups method
+
+    game = Game.new
+    board = game.board
+
+    set_test_groups(board,1)
+
+    groups = game.analyzer.find_all_groups()
+
+    # EXPECTED POINTS:
+    expected = { red: [  [ [4,4], [5,5], [5,6], [6,7], [6,8], [5,8], [4,8], [3,8], [2,7], [2,6], [2,5], [1,4], [1,3] ]  ],
+
+               white: [  [ [1,3], [1,2], [2,2], [2,1], [3,1], [4,2], [4,3], [4,4] ],
+                         [ [6,3], [7,3], [8,4], [9,5], [9,6], [8,6], [7,5], [6,4] ],
+                         [ [9,6], [10,6], [11,7], [11,8], [11,9], [10,9], [9,8], [9,7] ]  ],
+
+                blue: [  [ [5,2], [6,3], [6,4], [5,4], [4,3], [4,2] ],
+                         [ [2,5], [2,6] ],
+                         [ [6,7], [7,7], [8,7], [9,8], [10,9], [10,10], [9,10], [8,9], [8,10], [7,10], [6,9], [6,8] ]  ] }
+
+    for color in [:red, :white, :blue]
+      groups[color].each_index do |g|
+        spaces = game.analyzer.find_group_airpoints(groups[color][g])
+        assert_equal spaces.size, expected[color][g].size
+        for pt in expected[color][g]
+          assert(spaces.include?(pt))
+        end
       end
     end
   end
