@@ -123,11 +123,6 @@ class Board
   end
 
 
-  def set_point(point,value)
-    @points.set_point(point,value)
-  end
-
-
   def get_points_string
     @points.get_string
   end
@@ -148,11 +143,69 @@ class Board
   end
 
 
+  def adjacent?(pt1,pt2)
+    adj = true
+    adj = false if pt1.class != Array || pt2.class != Array
+    adj = false if pt1.size != 2 || pt2.size != 2
+    adj = false if [pt1,pt2].flatten.count {|z| z.class == Fixnum} != 4
+    adj = false if valid_point?(pt1) == false || valid_point?(pt2) == false
+
+    if adj == true
+      a1 = pt1[0]
+      b1 = pt1[1]
+      a2 = pt2[0]
+      b2 = pt2[1]
+      adj = false if (a1-a2).abs > 1 || (b1-b2).abs > 1
+      adj = false if (a1 == a2) && (b1 == b2)
+      adj = false if (a1 == a2+1) && (b1 == b2-1)
+      adj = false if (a1 == a2-1) && (b1 == b2+1)
+    end
+
+    return adj
+  end
+
+  def all_adjacent_points(p)
+    # Returns an array containing the set of adjacent valid points in
+    # clockwise order as follows: :right_up, :right, :right_dn, :left_dn,
+    # :left, :left_up
+
+    filter = [ [0,-1], [1,0], [1,1], [0,1], [-1,0], [-1,-1] ]
+    return get_adjacent_points(p,filter)
+  end
+
+
+  def all_previous_adjacent_points(p)
+    # Returns an array containing the set of adjacent valid points which
+    # are returned before the point p by the each method, in this order:
+    # :left_up, :left, :right_up
+
+    filter = [ [-1,-1], [-1,0], [0,-1] ]
+    return get_adjacent_points(p,filter)
+  end
+
+
+  def get_adjacent_points(p,filter)
+
+    points = []
+    if valid_point?(p)
+      a = p[0]
+      b = p[1]
+      for delta in filter
+        z = [ (a + delta[0]), (b + delta[1]) ]
+        points << z if valid_point?(z)
+      end
+    end
+    return points
+  end
+
+
 end
 
 
 
 class GameBoardPoints
+  # A collection of values for each point on the game board
+
   include Enumerable
 
 
@@ -173,12 +226,12 @@ class GameBoardPoints
   end
 
 
-  def each
+  def each   # FIXME This might be better in the Board class
     1.upto(@pt_array.size-1) do |i|
       row = @pt_array[i]
       row.each_index do |j|
         if not row[j] == nil
-          pt = {point: [j,i], value: row[j]}
+          pt = [j,i]
           yield pt
         end
       end
@@ -186,26 +239,15 @@ class GameBoardPoints
   end
 
 
-  def get_empty_points
+  def find_all_points(value)
     points = []
-    1.upto(@pt_array.size-1) do |i|
-      row = @pt_array[i]
-      row.each_index do |j|
-        points << [j,i] if row[j] == :empty
-      end
-    end
+    each {|pt| points << pt if get_point(pt) == value}
     return points
   end
 
 
-  def find_all_points(value)
-    points = []
-    1.upto(@pt_array.size-1) do |i|
-      row = @pt_array[i]
-      row.each_index do |j|
-        points << [j,i] if row[j] == value
-      end
-    end
+  def get_empty_points
+    points = find_all_points(:empty)
     return points
   end
 
@@ -285,60 +327,83 @@ class GroupAnalyzer
     @board = @game.board
     @points = @board.points
 
-    @groups = {red: [], white: [], blue: []}
+    @group_points = GameBoardPoints.new()
   end
+
 
   def get_all_groups
-    return @groups
-  end
+    groups = {red: [], white: [], blue: []}
 
-  def adjacent?(pt1,pt2)
-    adj = true
-    adj = false if pt1.class != Array || pt2.class != Array
-    adj = false if pt1.size != 2 || pt2.size != 2
-    adj = false if [pt1,pt2].flatten.count {|z| z.class == Fixnum} != 4
-    adj = false if @board.valid_point?(pt1) == false || @board.valid_point?(pt2) == false
+    @points.each do |point|
+      if @points.get_point(point) != :empty
+        color = @points.get_point(point)
+        same_color_neighbors = []
+        for nb in @board.all_previous_adjacent_points(point)
+          if @points.get_point(nb) == color
+            same_color_neighbors << {point: nb, group: @group_points.get_point(nb)}
+          end
+        end
 
-    if adj == true
-      a1 = pt1[0]
-      b1 = pt1[1]
-      a2 = pt2[0]
-      b2 = pt2[1]
-      adj = false if (a1-a2).abs > 1 || (b1-b2).abs > 1
-      adj = false if (a1 == a2) && (b1 == b2)
-      adj = false if (a1 == a2+1) && (b1 == b2-1)
-      adj = false if (a1 == a2-1) && (b1 == b2+1)
-    end
+        if same_color_neighbors == []
+          group = make_new_group(groups, color)
+        else
+          group = merge_groups(groups, color, same_color_neighbors)
+        end
 
-    return adj
-  end
-
-  def all_adjacent_points(p)
-    # Returns an array containing the set of adjacent valid points in
-    # clockwise order as follows: :right_up, :right, :right_dn, :left_dn,
-    # :left, :left_up  
-
-    points = []
-    if @board.valid_point?(p)
-      a = p[0]
-      b = p[1]
-      for delta in [ [0,-1], [1,0], [1,1], [0,1], [-1,0], [-1,-1] ]
-        z = [ (a + delta[0]), (b + delta[1]) ]
-        points << z if @board.valid_point?(z)
+        groups[color][group[:id]] << point
+        @group_points.set_point(point,group)
       end
     end
-    return points
+
+    return groups
   end
+
+
+  def make_new_group(groups, color)
+    i = groups[color].size
+    groups[color][i] = []
+    group = {color: color, id: i}
+    return group  # FIXME Make sure we add the new point to the new group in the groups[color][i] array
+  end
+
+
+  def merge_groups(groups, color, same_color_neighbors)
+    groups_to_merge = []
+
+    same_color_neighbors.each do |nb|
+      groups_to_merge << nb[:group] if not groups_to_merge.include?(nb[:group])
+    end
+
+    points = []
+    groups_to_merge.each do |gr|
+      points.concat(@group_points.find_all_points(gr))
+      groups[color][gr[:id]] = nil
+    end
+    groups[color].compact!
+
+    group = make_new_group(groups, color)
+    points.each {|pt| @group_points.set_point(pt,group)}
+    groups[color][group[:id]] = points
+    return group
+  end
+
+
+  def set_group_id(old_id, new_id)
+    group = @group_points.find_all_points(old_id)
+    group.each do |pt|
+      @group_points.set_point(pt, new_id)
+    end
+  end
+
 
   def find_group_airpoints(group)
     air = []
     for stone in group
-      air << all_adjacent_points(stone).select {|pt| @board.points.get_point(pt) == :empty}
+      air << @board.all_adjacent_points(stone).select {|pt| @board.points.get_point(pt) == :empty}
     end
     air.flatten!(1).uniq!
     return air
   end
-
 
 end
 
