@@ -308,34 +308,178 @@ class Go3Test < Test::Unit::TestCase
   end
 
 
+  # Tests Part Three - Legal Moves Methods
+
+  def test_find_legal_moves
+    game = Game.new
+    board = game.board
+    legal_moves = game.legal_moves
+
+    set_test_groups(board,3)
+
+    red_moves = legal_moves.find_legal_moves(:red)
+    white_moves = legal_moves.find_legal_moves(:white)
+    blue_moves = legal_moves.find_legal_moves(:blue)
+
+#    assert_equal red_moves.size, 55
+#    assert_equal white_moves.size, 55
+#    assert_equal blue_moves.size, 53
+
+#    assert red_moves.include?([5,1])
+#    assert white_moves.include?([5,1])
+#    assert blue_moves.include?([5,1])
+
+#    assert red_moves.include?([6,3])
+#    assert white_moves.include?([6,3])
+#    assert blue_moves.include?([6,3])
+
+#    assert red_moves.include?([2,7])
+#    assert white_moves.include?([2,7])
+#    assert blue_moves.include?([2,7])
+
+#    assert red_moves.include?([5,6])
+#    assert white_moves.include?([5,6])
+#    assert blue_moves.include?([5,6])
+
+#    assert red_moves.include?([9,5])
+#    assert white_moves.include?([9,5])
+#    assert blue_moves.include?([9,5])
+
+#    assert red_moves.include?([6,11])
+#    assert white_moves.include?([6,11])
+#    assert blue_moves.include?([6,11])
+
+#    assert red_moves.include?([10,11])
+#    assert white_moves.include?([10,11])
+#    assert blue_moves.include?([10,11])
+
+#    assert red_moves.include?([7,10])
+#    assert white_moves.include?([7,10])
+#    assert blue_moves.include?([7,10])
+
+    assert_equal red_moves.include?([3,2]), false
+    assert_equal white_moves.include?([3,2]), false
+    assert_equal blue_moves.include?([3,2]), false
+
+    assert_equal red_moves.include?([1,4]), false
+    assert_equal white_moves.include?([1,4]), false
+    assert_equal blue_moves.include?([1,4]), false
+
+    assert_equal red_moves.include?([6,4]), false
+    assert_equal white_moves.include?([6,4]), false
+    assert_equal blue_moves.include?([6,4]), false
+
+    assert_equal red_moves.include?([2,6]), false
+    assert_equal white_moves.include?([2,6]), false
+    assert_equal blue_moves.include?([2,6]), false
+
+    assert red_moves.include?([2,2])
+    assert white_moves.include?([2,2])
+    assert_equal blue_moves.include?([2,2]), false
+
+    assert red_moves.include?([1,3])
+    assert white_moves.include?([1,3])
+    assert_equal blue_moves.include?([1,3]), false
+  end
+
+
   # Utility Methods for Tests
 
   def set_test_groups(board, index)
     points = board.points
 
-    if index == 1
-      points.set_point([3,4], :red)
-      points.set_point([4,6], :red)
-      points.set_point([4,7], :red)
-      points.set_point([4,5], :red)
-      points.set_point([2,4], :red)
-      points.set_point([3,7], :red)
-      points.set_point([5,7], :red)
-      points.set_point([7,4], :white)
-      points.set_point([8,5], :white)
-      points.set_point([5,3], :blue)
-      points.set_point([3,3], :white)
-      points.set_point([2,3], :white)
-      points.set_point([3,2], :white)
-      points.set_point([3,5], :blue)
-      points.set_point([3,6], :blue)
-      points.set_point([10,8], :white)
-      points.set_point([10,7], :white)
-      points.set_point([7,8], :blue)
-      points.set_point([9,9], :blue)
-      points.set_point([7,9], :blue)
-      points.set_point([8,8], :blue)
+    case index
+
+    when 1
+      points.set_point [3,4], :red
+      points.set_point [4,6], :red
+      points.set_point [4,7], :red
+      points.set_point [4,5], :red
+      points.set_point [2,4], :red
+      points.set_point [3,7], :red
+      points.set_point [5,7], :red
+      points.set_point [7,4], :white
+      points.set_point [8,5], :white
+      points.set_point [5,3], :blue
+      points.set_point [3,3], :white
+      points.set_point [2,3], :white
+      points.set_point [3,2], :white
+      points.set_point [3,5], :blue
+      points.set_point [3,6], :blue
+      points.set_point [10,8], :white
+      points.set_point [10,7], :white
+      points.set_point [7,8], :blue
+      points.set_point [9,9], :blue
+      points.set_point [7,9], :blue
+      points.set_point [8,8], :blue
+
+    when 2
+      points.set_point [1,1], :white
+      points.set_point [2,1], :blue
+      points.set_point [3,1], :blue
+      points.set_point [4,1], :blue
+      points.set_point [6,1], :red
+      points.set_point [2,2], :white
+      points.set_point [3,2], :white
+      points.set_point [4,2], :white
+      points.set_point [5,2], :white
+      points.set_point [6,2], :blue
+      points.set_point [7,2], :blue
+      points.set_point [3,3], :blue
+      points.set_point [4,3], :red
+      points.set_point [5,3], :blue
+      points.set_point [6,3], :red
+      points.set_point [2,4], :red
+      points.set_point [3,4], :blue
+      points.set_point [4,4], :red
+      points.set_point [5,4], :blue
+      points.set_point [6,4], :red
+      points.set_point [3,5], :red
+      points.set_point [4,5], :white
+      points.set_point [6,5], :red
+      points.set_point [4,6], :white
+      points.set_point [5,6], :white
+
+    when 3
+      points.set_point [1,1], :blue
+      points.set_point [2,1], :blue
+      points.set_point [3,1], :red
+      points.set_point [4,1], :blue
+      points.set_point [1,2], :red
+      points.set_point [3,2], :red
+      points.set_point [4,2], :blue
+      points.set_point [5,2], :red
+      points.set_point [2,3], :red
+      points.set_point [3,3], :blue
+      points.set_point [4,3], :red
+      points.set_point [5,3], :red
+      points.set_point [1,4], :blue
+      points.set_point [2,4], :red
+      points.set_point [3,4], :white
+      points.set_point [4,4], :blue
+      points.set_point [5,4], :white
+      points.set_point [6,4], :white
+      points.set_point [7,4], :white
+      points.set_point [1,5], :blue
+      points.set_point [2,5], :white
+      points.set_point [3,5], :blue
+      points.set_point [4,5], :white
+      points.set_point [5,5], :white
+      points.set_point [6,5], :blue
+      points.set_point [7,5], :blue
+      points.set_point [1,6], :white
+      points.set_point [2,6], :white
+      points.set_point [3,6], :blue
+      points.set_point [4,6], :blue
+      points.set_point [6,6], :blue
+      points.set_point [3,7], :red
+      points.set_point [4,7], :red
+      points.set_point [5,7], :red
+      points.set_point [6,7], :white
+      points.set_point [7,7], :white
     end
+
+
   end
 
 

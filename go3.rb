@@ -37,12 +37,13 @@ end
 
 class Game
 
-  attr :board, :analyzer
+  attr :board, :analyzer, :legal_moves
 
 
   def initialize
     @board = Board.new
     @analyzer = GroupAnalyzer.new(self)
+    @legal_moves = LegalMovesFinder.new(self)
   end
 
 
@@ -273,6 +274,8 @@ class GameBoardPoints
   # TODO Temporarily, this method returns the set of all empty points. Later
   #      we will need to add functionality to compute legal points as the game
   #      progresses.
+  # FIXME Get rid of the 4 layers of method calls to get to this method!!!
+  #       Which class should really call the string builder method?
   def get_string
     @string_builder.get_string(find_all_points(:empty))
   end
@@ -282,42 +285,25 @@ end
 
 
 
-class PointStringBuilder
+class LegalMovesFinder
 
-  HEX_D = {10 => "a",
-           11 => "b",
-           12 => "c",
-           13 => "d",
-           14 => "e",
-           15 => "f" }
-
-  def get_string(points)
-    str = all_points_to_string(points)
-#    binding.pry
-    return str
+  def initialize(game_object)
+    @game = game_object
+    @board = @game.board
+    @points = @board.points
   end
 
 
-  def all_points_to_string(points)
-    str = points.map {|pt| point_to_string(pt)}.reduce("",:<<) {|pt_str| pt_str}
-    return str
-  end
+  def find_legal_moves(color)
+    moves = []
 
 
-  def point_to_string(point)
-    str = hex_digit(point[0]) + hex_digit(point[1])
-    return str
-  end
-
-
-  def hex_digit(n)
-    dd = n<10 ? n.to_s : HEX_D[n] if n >= 0 && n < 16
-    dd = " " if n<0 || n>15
-    return dd
+    return moves
   end
 
 
 end
+
 
 
 class GroupAnalyzer
@@ -406,6 +392,45 @@ class GroupAnalyzer
   end
 
 end
+
+
+
+class PointStringBuilder
+
+  HEX_D = {10 => "a",
+           11 => "b",
+           12 => "c",
+           13 => "d",
+           14 => "e",
+           15 => "f" }
+
+  def get_string(points)
+    str = all_points_to_string(points)
+    return str
+  end
+
+
+  def all_points_to_string(points)
+    str = points.map {|pt| point_to_string(pt)}.join
+    return str
+  end
+
+
+  def point_to_string(point)
+    str = hex_digit(point[0]) + hex_digit(point[1])
+    return str
+  end
+
+
+  def hex_digit(n)
+    dd = n<10 ? n.to_s : HEX_D[n] if n >= 0 && n < 16
+    dd = " " if n<0 || n>15
+    return dd
+  end
+
+
+end
+
 
 
 def go_string
