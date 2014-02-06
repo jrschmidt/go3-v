@@ -4,7 +4,7 @@ require 'sinatra'
 
 require 'coffee-script'
 
-#require 'pry'
+require 'pry'
 
 set :server, %w[webrick thin mongrel]
 
@@ -178,9 +178,9 @@ class Board
   def all_previous_adjacent_points(p)
     # Returns an array containing the set of adjacent valid points which
     # are returned before the point p by the each method, in this order:
-    # :left_up, :left, :right_up
+    # :left_up, :right_up, :left
 
-    filter = [ [-1,-1], [-1,0], [0,-1] ]
+    filter = [ [-1,-1], [0,-1], [-1,0] ]
     return get_adjacent_points(p,filter)
   end
 
@@ -227,7 +227,7 @@ class GameBoardPoints
   end
 
 
-  def each   # FIXME This might be better in the Board class
+  def each
     1.upto(@pt_array.size-1) do |i|
       row = @pt_array[i]
       row.each_index do |j|
@@ -271,6 +271,11 @@ class GameBoardPoints
   end
 
 
+  def set_points(value, points_array)
+    points_array.each {|pt| set_point(pt,value)}
+  end
+
+
   # TODO Temporarily, this method returns the set of all empty points. Later
   #      we will need to add functionality to compute legal points as the game
   #      progresses.
@@ -291,15 +296,38 @@ class LegalMovesFinder
     @game = game_object
     @board = @game.board
     @points = @board.points
+    @analyzer = @game.analyzer
   end
 
 
-  def find_legal_moves(color)
-    moves = []
+#  def find_legal_moves(color)
+#    moves = []
+#    all_empty_adjacent_points_for_group = {red: [], white: [], blue: []}
+#    one_eye_groups = {red: [], white: [], blue: []}
+#    groups = @analyzer.find_all_groups
+
+#    [:red, :white, :blue].each do |color|
+#      groups[color].each do |group|
+#        eyes = @analyzer.find_group_airpoints(group)
 
 
-    return moves
-  end
+#      g1 = groups[color].find_all {|group| @analyzer.find_group_airpoints(group).size == 1}
+
+
+
+#      one_eye_groups[color].reject! {|group| 
+
+
+
+#      one_eye_groups[color] = groups[color].find_all {|group| @analyzer.find_group_airpoints(group).size == 1}
+#      one_eye_groups[color].reject! {|group| 
+
+#    end
+    
+
+
+#    return moves
+#  end
 
 
 end
@@ -307,6 +335,8 @@ end
 
 
 class GroupAnalyzer
+
+  attr :group_points
 
   def initialize(game_object)
     @game = game_object
@@ -323,25 +353,103 @@ class GroupAnalyzer
     @points.each do |point|
       if @points.get_point(point) != :empty
         color = @points.get_point(point)
-        same_color_neighbors = []
-        for nb in @board.all_previous_adjacent_points(point)
-          if @points.get_point(nb) == color
-            same_color_neighbors << {point: nb, group: @group_points.get_point(nb)}
-          end
-        end
 
-        if same_color_neighbors == []
+        neighbor_groups = find_same_color_neighbor_groups(point,color)
+
+        if neighbor_groups.size == 0
           group = make_new_group(groups, color)
         else
-          group = merge_groups(groups, color, same_color_neighbors)
+          group = same_color_neighbors[0][:group]
+        end
+
+        if neighbor_groups.size > 1
+
         end
 
         groups[color][group[:id]] << point
         @group_points.set_point(point,group)
+        binding.pry
       end
     end
 
+    binding.pry
     return groups
+  end
+
+
+  def find_same_color_neighbor_groups(point,color)
+    neighbor_groups = []
+    group_ids = []
+
+    amigos = []
+    for nb in @board.all_previous_adjacent_points(point)
+      amigos << nb if @points.get_point(nb) == color
+    end
+
+    amigos.each {|pt| group_ids << @group_points.get_point(pt)[:id] if .... #TODO
+    # TODO [ SEE NOTE at unit_tests.rb ln 216 ]
+
+    return neighbor_groups
+  end
+
+
+  def find_empty_points_for_groups
+    empty_points = {red: [], white: [], blue: []}
+    groups = find_all_groups
+
+    [:red, :white, :blue].each do |color|
+      groups[color].each do |group|
+
+
+        gg = {eyes: [], points: group}
+        empty_points[color] << gg
+        binding.pry
+      end
+    end
+
+    return empty_points
+  end
+
+
+  def find_all_one_eyed_groups
+    one_eyes = {red: [], white: [], blue: []}
+    groups = find_all_groups
+
+    [:red, :white, :blue].each do |color|
+      groups[color].each do |group|
+        airpoints = find_group_airpoints(group)
+        if airpoints.size == 1
+          pt = airpoints[0]
+
+
+        end
+
+
+      end
+    end
+
+###############################################################
+#    all_empty_adjacent_points_for_group = {red: [], white: [], blue: []}
+#    one_eye_groups = {red: [], white: [], blue: []}
+#    groups = @analyzer.find_all_groups
+
+#    [:red, :white, :blue].each do |color|
+#      groups[color].each do |group|
+#        eyes = @analyzer.find_group_airpoints(group)
+
+
+#      g1 = groups[color].find_all {|group| @analyzer.find_group_airpoints(group).size == 1}
+
+
+
+#      one_eye_groups[color].reject! {|group| 
+
+
+
+#      one_eye_groups[color] = groups[color].find_all {|group| @analyzer.find_group_airpoints(group).size == 1}
+#      one_eye_groups[color].reject! {|group| 
+###############################################################
+    return one_eyes
   end
 
 
@@ -349,7 +457,7 @@ class GroupAnalyzer
     i = groups[color].size
     groups[color][i] = []
     group = {color: color, id: i}
-    return group  # FIXME Make sure we add the new point to the new group in the groups[color][i] array
+    return group
   end
 
 
@@ -365,7 +473,7 @@ class GroupAnalyzer
       points.concat(@group_points.find_all_points(gr))
       groups[color][gr[:id]] = nil
     end
-    groups[color].compact!
+#    groups[color].compact!
 
     group = make_new_group(groups, color)
     points.each {|pt| @group_points.set_point(pt,group)}
