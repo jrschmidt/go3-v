@@ -227,6 +227,8 @@ class GameBoardPoints
   end
 
 
+    # TODO Wondering if this would be better as a method of Board class
+    # since all it does is return/yield a pair of coordinates for the gameboard.
   def each
     1.upto(@pt_array.size-1) do |i|
       row = @pt_array[i]
@@ -386,11 +388,29 @@ class GroupAnalyzer
       amigos << nb if @points.get_point(nb) == color
     end
 
-    amigos.each {|pt| group_ids << @group_points.get_point(pt)[:id] if .... #TODO
-    # TODO [ SEE NOTE at unit_tests.rb ln 216 ]
+    amigos.each do |pt|
+      grp_id = @group_points.get_point(pt)[:id]
+      group_ids << grp_id if not group_ids.include?(grp_id)
+    end
+
+    group_ids.each do |id|
+      stones = get_group_stones(color, id)
+      grp = {id: id, stones: stones}
+      neighbor_groups << grp
+    end
 
     return neighbor_groups
   end
+
+
+  def get_group_stones(color, id)
+    return @points.find_all {|point| @group_points.get_point(point) == {color: color, id: id} }
+
+  end
+
+
+  # TODO Probably want to make a get_group(point) method !!
+  # So we don't have to keep calling @group_points.get_point(point)
 
 
   def find_empty_points_for_groups
