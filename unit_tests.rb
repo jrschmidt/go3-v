@@ -109,6 +109,7 @@ class Go3Test < Test::Unit::TestCase
   end
 
 
+  # TODO We can test some or all of the points returned with valid_point? method.
   def test_game_board_points_each_method
     game = Game.new
     board = game.board
@@ -206,38 +207,108 @@ class Go3Test < Test::Unit::TestCase
   # Tests Part Two - Game Analysis Methods
 
 
-  def test_find_same_color_neighbor_groups
+  def test_find_same_color_neighbor_groups_1
+    # Add a single point to an existing group
+
     game = Game.new
     board = game.board
     analyzer = game.analyzer
     points = board.points
     group_points = game.analyzer.group_points
 
-    # TODO Completely redo this test data. The find_same_color_neighbor_groups
-    # method actually needs to just look at PREVIOUS points (up_left, up_right, left),
-    # so there can only be a maximum of two distinct neighboring group for any point
-    # we look at. So we need test data with points to test that will give us 0, 1 or 2
-    # neighboring groups, with and without clutter from other color stones.
+    points.set_points :red, [ [3,3], [4,3] ]
+    points.set_points :white, [ [3,1], [2,2], [3,2], [5,1], [6,1], [5,3] ]
+    points.set_points :blue, [ [1,2], [2,3], [5,2], [6,2] ]
 
-    points.set_points :red, [ [2,3], [3,3], [4,5], [5,5], [7,3], [7,4], [6,4], [7,7], [7,6] ]
-    points.set_points :white, [ [7,5], [8,5] ]
-    points.set_points :blue, [ [6,6], [6,7], [7,8] ]
+    group_points.set_points( {color: :red, id: 0}, [ [3,3], [4,3] ] )
+    group_points.set_points( {color: :white, id: 0}, [ [3,1], [2,2], [3,2] ] )
+    group_points.set_points( {color: :white, id: 1}, [ [5,1], [6,1] ] )
+    group_points.set_points( {color: :white, id: 2}, [ [5,3] ] )
+    group_points.set_points( {color: :blue, id: 0}, [ [1,2], [2,3] ] )
+    group_points.set_points( {color: :blue, id: 1}, [ [5,2], [6,2] ] )
 
-    group_points.set_points( {color: :red, id: 0}, [ [3,3], [2,3] ] )
-    group_points.set_points( {color: :red, id: 1}, [ [7,3], [7,4], [6,4] ] )
-    group_points.set_points( {color: :red, id: 2}, [ [4,5], [5,5] ] )
-    group_points.set_points( {color: :red, id: 3}, [ [7,7], [7,6] ] )
-    group_points.set_points( {color: :white, id: 0}, [ [7,5], [8,5] ] )
-    group_points.set_points( {color: :blue, id: 0}, [ [6,6], [6,7], [7,8] ] )
-
-    ngroups = analyzer.find_same_color_neighbor_groups([6,5],:red)
+    ngroups = analyzer.find_same_color_neighbor_groups([6,3],:white)
     assert_equal ngroups.class, Array
-    assert_equal ngroups.size, 3
+    assert_equal ngroups.size, 1
     for gp in ngroups
       assert_equal gp.class, Hash
       assert gp.keys.include?(:id)
       assert gp.keys.include?(:stones)
     end
+
+  end
+
+
+  def test_find_same_color_neighbor_groups_2
+    # Merge two groups and add the new point
+
+    game = Game.new
+    board = game.board
+    analyzer = game.analyzer
+    points = board.points
+    group_points = game.analyzer.group_points
+
+    points.set_points :red, [ [3,2], [4,2], [4,4], [5,4], [6,3], [7,3] ]
+    points.set_points :white, [ [5,2], [6,2] ]
+    points.set_points :blue, [ [1,2], [2,3], [3,3] ]
+
+    group_points.set_points( {color: :red, id: 0}, [ [3,2], [4,2] ] )
+    group_points.set_points( {color: :red, id: 1}, [ [6,3], [7,3] ] )
+    group_points.set_points( {color: :red, id: 2}, [ [4,4], [5,4] ] )
+    group_points.set_points( {color: :white, id: 0}, [ [5,2], [6,2] ] )
+    group_points.set_points( {color: :blue, id: 0}, [ [1,2], [2,3], [3,3] ] )
+
+    ngroups = analyzer.find_same_color_neighbor_groups([6,4],:red)
+    assert_equal ngroups.class, Array
+    assert_equal ngroups.size, 2
+    for gp in ngroups
+      assert_equal gp.class, Hash
+      assert gp.keys.include?(:id)
+      assert gp.keys.include?(:stones)
+    end
+
+  end
+
+
+  def test_get_group_stones
+    game = Game.new
+    board = game.board
+    analyzer = game.analyzer
+    points = board.points
+    group_points = game.analyzer.group_points
+
+    points.set_points :red, [ [2,4], [3,4], [4,5], [4,6], [3,7], [4,7], [5,7] ]
+    points.set_points :white, [ [2,3], [3,3], [3,2], [6,2], [6,5], [7,6] ]
+    points.set_points :blue, [ [3,5], [3,6], [5,3], [6,3], [7,4], [8,5] ]
+
+    group_points.set_points( {color: :red, id: 0}, [ [2,4], [3,4], [4,5], [4,6], [3,7], [4,7], [5,7] ] )
+    group_points.set_points( {color: :white, id: 0}, [ [2,3], [3,3], [3,2] ] )
+    group_points.set_points( {color: :white, id: 1}, [ [6,2] ] )
+    group_points.set_points( {color: :white, id: 2}, [ [6,5], [7,6] ] )
+    group_points.set_points( {color: :blue, id: 0}, [ [5,3], [6,3], [7,4], [8,5] ] )
+    group_points.set_points( {color: :blue, id: 1}, [ [3,5], [3,6] ] )
+
+    exp_red0 = [ [2,4], [3,4], [4,5], [4,6], [3,7], [4,7], [5,7] ]
+    exp_white0 = [ [2,3], [3,3], [3,2] ]
+    exp_white1 = [ [6,2] ]
+    exp_white2 = [ [6,5], [7,6] ]
+    exp_blue0 = [ [5,3], [6,3], [7,4], [8,5] ]
+    exp_blue1 = [ [3,5], [3,6] ]
+
+    red0 = analyzer.get_group_stones(:red, 0)
+    white0 = analyzer.get_group_stones(:white, 0)
+    white1 = analyzer.get_group_stones(:white, 1)
+    white2 = analyzer.get_group_stones(:white, 2)
+    blue0 = analyzer.get_group_stones(:blue, 0)
+    blue1 = analyzer.get_group_stones(:blue, 1)
+
+    assert_contain_same_objects exp_red0, red0
+    assert_contain_same_objects exp_white0, white0
+    assert_contain_same_objects exp_white1, white1
+    assert_contain_same_objects exp_white2, white2
+    assert_contain_same_objects exp_blue0, blue0
+    assert_contain_same_objects exp_blue1, blue1
+
 
   end
 
@@ -606,7 +677,7 @@ class Go3Test < Test::Unit::TestCase
 #  end
 
 
-  # Utility Methods for Tests
+  # Custom Assertion Methods
 
   def assert_array(objekt, array_size, component_type)
     ok = true
@@ -656,6 +727,20 @@ class Go3Test < Test::Unit::TestCase
     assert ok, "Expected object <#{objekt.class}> to be a Hash with keys [:red, :white, :blue] and values of type Array with each element of the array of type #{component_type}"
   end
 
+
+  def assert_contain_same_objects(array1, array2)
+    ok = true
+    if array1.size != array2.size
+      ok = false
+    else
+      array1.each {|obj| ok = false if array2.include?(obj) == false }
+    end
+
+    assert ok, "Expected both arrays to contain the same objects (in any order)."
+  end
+
+
+  # Utility Methods for Tests
 
   def set_test_groups(board, index)
     points = board.points
