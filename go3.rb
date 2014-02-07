@@ -413,20 +413,14 @@ class GroupAnalyzer
   end
 
 
-  # TODO Probably want to make a get_group(point) method !!
-  # So we don't have to keep calling @group_points.get_point(point)
-
-
   def find_empty_points_for_groups
     empty_points = {red: [], white: [], blue: []}
     groups = find_all_groups
 
     [:red, :white, :blue].each do |color|
       groups[color].each do |group|
-
-
-        gg = {eyes: [], points: group}
-        empty_points[color] << gg
+        eyes = find_group_airpoints(group)
+        empty_points[color] << {eyes: eyes, points: group}
       end
     end
 
@@ -480,27 +474,6 @@ class GroupAnalyzer
     i = groups[color].size
     groups[color][i] = []
     group = {color: color, id: i}
-    return group
-  end
-
-
-  def merge_groups(groups, color, same_color_neighbors)
-    groups_to_merge = []
-
-    same_color_neighbors.each do |nb|
-      groups_to_merge << nb[:group] if not groups_to_merge.include?(nb[:group])
-    end
-
-    points = []
-    groups_to_merge.each do |gr|
-      points.concat(@group_points.find_all_points(gr))
-      groups[color][gr[:id]] = nil
-    end
-#    groups[color].compact!
-
-    group = make_new_group(groups, color)
-    points.each {|pt| @group_points.set_point(pt,group)}
-    groups[color][group[:id]] = points
     return group
   end
 

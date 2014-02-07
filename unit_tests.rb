@@ -302,15 +302,6 @@ class Go3Test < Test::Unit::TestCase
   end
 
 
-  def test_merge_groups
-    game = Game.new
-    board = game.board
-
-
-
-  end
-
-
   def test_find_all_groups_1
     game = Game.new
     board = game.board
@@ -399,8 +390,7 @@ class Go3Test < Test::Unit::TestCase
   end
 
 
-  def test_find_group_airpoints_1
-    # (1) Use hard-coded groups
+  def test_find_group_airpoints
 
     game = Game.new
     board = game.board
@@ -436,47 +426,12 @@ class Go3Test < Test::Unit::TestCase
              expected_points: [ [6,7], [7,7], [8,7], [9,8], [10,9], [10,10], [9,10], [8,9], [8,10], [7,10], [6,9], [6,8] ] }
 
     groups = [red1, white1, white2, white3, blue1, blue2, blue3]
+
     for group in groups
       spaces = game.analyzer.find_group_airpoints(group[:stones])
-      assert_equal spaces.size, group[:expected_points].size
-      for pt in group[:expected_points]
-        assert(spaces.include?(pt))
-      end
+      assert_contain_same_objects group[:expected_points], spaces
     end
   end
-
-
-#  def test_find_group_airpoints_2
-    # (2) Use groups returned by find_all_groups method
-
-#    game = Game.new
-#    board = game.board
-
-#    set_test_groups(board,1)
-
-#    groups = game.analyzer.find_all_groups()
-
-    # EXPECTED POINTS:
-#    expected = { red: [  [ [4,4], [5,5], [5,6], [6,7], [6,8], [5,8], [4,8], [3,8], [2,7], [2,6], [2,5], [1,4], [1,3] ]  ],
-
-#               white: [  [ [1,3], [1,2], [2,2], [2,1], [3,1], [4,2], [4,3], [4,4] ],
-#                         [ [6,3], [7,3], [8,4], [9,5], [9,6], [8,6], [7,5], [6,4] ],
-#                         [ [9,6], [10,6], [11,7], [11,8], [11,9], [10,9], [9,8], [9,7] ]  ],
-
-#                blue: [  [ [5,2], [6,3], [6,4], [5,4], [4,3], [4,2] ],
-#                         [ [2,5], [2,6] ],
-#                         [ [6,7], [7,7], [8,7], [9,8], [10,9], [10,10], [9,10], [8,9], [8,10], [7,10], [6,9], [6,8] ]  ] }
-
-#    for color in [:red, :white, :blue]
-#      groups[color].each_index do |g|
-#        spaces = game.analyzer.find_group_airpoints(groups[color][g])
-#        assert_equal spaces.size, expected[color][g].size
-#        for pt in expected[color][g]
-#          assert(spaces.include?(pt))
-#        end
-#      end
-#    end
-#  end
 
 
   def test_find_empty_points_for_groups
@@ -486,63 +441,73 @@ class Go3Test < Test::Unit::TestCase
 
     set_test_groups(board,3)
 
-    expected = { red: [ {eyes: [[1,3], [2,2]],
-                         points: [[1,2], [2,3], [2,4]] },
+    empty_points = analyzer.find_empty_points_for_groups
+    assert_rwb_hash(empty_points, Hash)
 
-                        {eyes: [[2,2], [5,1]],
-                         points: [[3,1], [3,2], [4,3], [5,3], [5,2]] },
+    red = empty_points[:red]
+    white = empty_points[:white]
+    blue = empty_points[:blue]
 
-                        {eyes: [[2,7], [3,8], [4,8], [5,8], [6,8], [5,6]],
-                         points: [[3,7], [4,7], [5,7]] } ],
+    assert_equal red.size, 3
+    assert_equal white.size, 4
+    assert_equal blue.size, 7
 
-               white: [ {eyes: [[5,1]],
-                         points: [[6,1], [6,2], [7,2]] },
+    red_exp = [ {eyes: [[1,3], [2,2]],
+                 points: [[1,2], [2,3], [2,4]] },
 
-                        {eyes: [[2,7]],
-                         points: [[1,6], [2,6], [2,5]] },
+                {eyes: [[2,2], [5,1]],
+                 points: [[3,1], [3,2], [4,3], [5,3], [5,2]] },
 
-                        {eyes: [[5,6], [7,6], [8,6], [8,5]],
-                         points: [[3,4], [4,5], [5,5], [5,4], [6,4], [7,4], [8,4]] },
+                {eyes: [[2,7], [3,8], [4,8], [5,8], [6,8], [5,6]],
+                 points: [[3,7], [4,7], [5,7]] } ]
 
-                        {eyes: [[6,8], [7,8], [8,8], [8,7], [5,6], [7,6]],
-                         points: [[6,7], [7,7]] } ],
+    red_exp.each do |xgrp|
+      assert_not_nil red.find {|group| contain_same_objects(xgrp[:eyes], group[:eyes]) }
+      assert_not_nil red.find {|group| contain_same_objects(xgrp[:points], group[:points]) }
+    end
 
-                blue: [ {eyes: [[2,2]],
-                         points: [[1,1], [2,1]] },
+    white_exp = [ {eyes: [[5,1]],
+                   points: [[6,1], [6,2], [7,2]] },
 
-                        {eyes: [[2,2]],
-                         points: [[3,3], [4,4]] },
+                  {eyes: [[2,7]],
+                   points: [[1,6], [2,6], [2,5]] },
 
-                        {eyes: [[5,1]],
-                         points: [[4,1], [4,2]] },
+                  {eyes: [[5,6], [8,5], [9,5], [9,4]],
+                   points: [[3,4], [4,5], [5,5], [5,4], [6,4], [7,4], [8,4]] },
 
-                        {eyes: [[1,3]],
-                         points: [[1,4], [1,5]] },
+                  {eyes: [[6,8], [7,8], [8,8], [8,7], [5,6], [7,6]],
+                   points: [[6,7], [7,7]] } ]
 
-                        {eyes: [[5,6]],
-                         points: [[3,5], [3,6], [4,6]] },
+    white_exp.each do |xgrp|
+      assert_not_nil white.find {|group| contain_same_objects(xgrp[:eyes], group[:eyes]) }
+      assert_not_nil white.find {|group| contain_same_objects(xgrp[:points], group[:points]) }
+    end
 
-                        {eyes: [[9,4]],
-                         points: [[6,3], [7,3], [8,3]] },
+    blue_exp = [ {eyes: [[2,2]],
+                  points: [[1,1], [2,1]] },
 
-                        {eyes: [[5,6], [7,6], [8,6], [8,5]],
-                         points: [[6,6], [6,5], [7,5]] } ] }
+                 {eyes: [[2,2]],
+                  points: [[3,3], [4,4]] },
 
+                 {eyes: [[5,1]],
+                  points: [[4,1], [4,2]] },
 
-#    empty_points = analyzer.find_empty_points_for_groups
-#    TODO Replace with assert_rwb_hash
+                 {eyes: [[1,3]],
+                  points: [[1,4], [1,5]] },
 
-#    assert_equal empty_points.class, Hash
-#    assert_equal empty_points[:red].class, Array
-#    assert_equal empty_points[:white].class, Array
-#    assert_equal empty_points[:blue].class, Array
+                 {eyes: [[5,6]],
+                  points: [[3,5], [3,6], [4,6]] },
 
-#    assert_equal empty_points[:red].size, 3
-#    assert_equal empty_points[:white].size, 4
-#    assert_equal empty_points[:blue].size, 7
-#    one_eyes[:white].each {|group| assert(expected[:white].include?(group)) }
-#    one_eyes[:blue].each {|group| assert(expected[:blue].include?(group)) }
+                 {eyes: [[9,4]],
+                  points: [[6,3], [7,3], [8,3]] },
 
+                 {eyes: [[5,6], [7,6], [8,6], [8,5]],
+                  points: [[6,6], [6,5], [7,5]] } ]
+
+    blue_exp.each do |xgrp|
+      assert_not_nil blue.find {|group| contain_same_objects(xgrp[:eyes], group[:eyes]) }
+      assert_not_nil blue.find {|group| contain_same_objects(xgrp[:points], group[:points]) }
+    end 
 
   end
 
