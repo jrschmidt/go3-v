@@ -4,7 +4,7 @@ require 'sinatra'
 
 require 'coffee-script'
 
-require 'pry'
+#require 'pry'
 
 set :server, %w[webrick thin mongrel]
 
@@ -373,14 +373,12 @@ class GroupAnalyzer
           neighbor_groups[1][:stones].each {|pt| @group_points.set_point(pt,group) }
         end
 
-#        binding.pry
         groups[color][gid] << point
         @group_points.set_point(point,group)
       end
     end
 
     [:red, :white, :blue].each {|color| groups[color].compact! }
-    binding.pry
     return groups
   end
 
@@ -429,7 +427,6 @@ class GroupAnalyzer
 
         gg = {eyes: [], points: group}
         empty_points[color] << gg
-        binding.pry
       end
     end
 

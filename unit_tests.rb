@@ -317,73 +317,86 @@ class Go3Test < Test::Unit::TestCase
 
     set_test_groups(board,1)
 
-    # TODO Replace with assert_rwb_hash
-
     groups = game.analyzer.find_all_groups()
-    assert_equal groups.class, Hash
+    assert_rwb_hash(groups, Array)
 
     red = groups[:red]
     white = groups[:white]
     blue = groups[:blue]
-    assert_equal red.class, Array
+
     assert_equal red.size, 1
-    assert_equal white.class, Array
     assert_equal white.size, 3
-    assert_equal blue.class, Array
     assert_equal blue.size, 3
 
-    assert_equal red[0].size, 7
-    expected = [ [2, 4], [3, 4], [4, 5], [4, 6], [3, 7], [4, 7], [5, 7] ]
-    expected.each {|pt| assert(red[0].include?(pt)) }
+    red_exp_0 = [ [2, 4], [3, 4], [4, 5], [4, 6], [3, 7], [4, 7], [5, 7] ]
+    assert_contain_same_objects red_exp_0, red[0]
 
-    assert_equal white[0].size, 3
-    expected = [ [2, 3], [3, 2], [3, 3] ]
-    expected.each {|pt| assert(white[0].include?(pt)) }
+    white_exp = [ [ [2, 3], [3, 2], [3, 3] ],
+                  [ [7, 4], [8, 5] ],
+                  [ [10, 7], [10, 8] ] ]
 
-    assert_equal white[1].size, 2
-    expected = [ [7, 4], [8, 5] ]
-    expected.each {|pt| assert(white[1].include?(pt)) }
+    white_exp.each do |xgrp|
+      assert_not_nil white.find {|group| contain_same_objects(xgrp,group) }
+    end 
 
-    assert_equal white[2].size, 2
-    expected = [ [10, 7], [10, 8] ]
-    expected.each {|pt| assert(white[2].include?(pt)) }
+    blue_exp = [ [ [5, 3] ],
+                 [ [3, 5], [3, 6] ],
+                 [ [7, 8], [8, 8], [7, 9], [9, 9] ] ]
 
-    assert_equal blue[0], [ [5, 3] ]
+    blue_exp.each do |xgrp|
+      assert_not_nil blue.find {|group| contain_same_objects(xgrp,group) }
+    end
 
-    assert_equal blue[1].size, 2
-    expected = [ [3, 5], [3, 6] ]
-    expected.each {|pt| assert(blue[1].include?(pt)) }
-
-    assert_equal blue[2].size, 4
-    expected = [ [7, 8], [8, 8], [7, 9], [9, 9] ]
-    expected.each {|pt| assert(blue[2].include?(pt)) }
   end
 
 
-#     TODO FINISH THESE 2 TESTS AND ADD THE assert_rwb METHOD TODO     #
+  def test_find_all_groups_3
+    game = Game.new
+    board = game.board
 
-#  def test_find_all_groups_3
-#    game = Game.new
-#    board = game.board
+    set_test_groups(board,3)
 
-#    set_test_groups(board,3)
+    groups = game.analyzer.find_all_groups()
+    assert_rwb_hash(groups, Array)
 
-#    TODO Replace with assert_rwb_hash
+    red = groups[:red]
+    white = groups[:white]
+    blue = groups[:blue]
 
-#    groups = game.analyzer.find_all_groups()
-#    assert_equal groups.class, Hash
+    assert_equal red.size, 3
+    assert_equal white.size, 4
+    assert_equal blue.size, 7
 
-#    red = groups[:red]
-#    white = groups[:white]
-#    blue = groups[:blue]
-#    assert_equal red.class, Array
-#    assert_equal red.size, 3
-#    assert_equal white.class, Array
-#    assert_equal white.size, 4
-#    assert_equal blue.class, Array
-#    assert_equal blue.size, 7
+    red_exp = [ [ [3,7], [4,7], [5,7] ],
+                [ [2,4], [2,3], [1,2] ],
+                [ [3,1], [3,2], [4,3], [5,3], [5,2] ] ]
 
-#  end
+    red_exp.each do |xgrp|
+      assert_not_nil red.find {|group| contain_same_objects(xgrp,group) }
+    end 
+
+    white_exp = [ [ [3,4], [4,5], [5,5], [5,4], [6,4], [7,4], [8,4] ],
+                  [ [1,6], [2,6], [2,5] ],
+                  [ [6,1], [7,2], [6,2] ],
+                  [ [6,7], [7,7] ] ]
+
+    white_exp.each do |xgrp|
+      assert_not_nil white.find {|group| contain_same_objects(xgrp,group) }
+    end 
+
+    blue_exp = [ [ [1,1], [2,1] ],
+                 [ [4,1], [4,2] ], 
+                 [ [3,3], [4,4] ], 
+                 [ [6,3], [7,3], [8,3] ], 
+                 [ [1,4], [1,5] ], 
+                 [ [3,5], [3,6], [4,6] ], 
+                 [ [6,6], [6,5], [7,5] ] ]
+
+    blue_exp.each do |xgrp|
+      assert_not_nil blue.find {|group| contain_same_objects(xgrp,group) }
+    end 
+
+  end
 
 
   def test_find_group_airpoints_1
@@ -720,6 +733,14 @@ class Go3Test < Test::Unit::TestCase
 
 
   def assert_contain_same_objects(array1, array2)
+    ok = contain_same_objects(array1, array2)
+    assert ok, "Expected both arrays to contain the same objects (in any order)."
+  end
+
+
+  # Utility Methods for Tests
+
+  def contain_same_objects(array1, array2)
     ok = true
     if array1.size != array2.size
       ok = false
@@ -727,11 +748,11 @@ class Go3Test < Test::Unit::TestCase
       array1.each {|obj| ok = false if array2.include?(obj) == false }
     end
 
-    assert ok, "Expected both arrays to contain the same objects (in any order)."
+    return ok
   end
 
 
-  # Utility Methods for Tests
+  # Test Data Setting Methods
 
   def set_test_groups(board, index)
     points = board.points
