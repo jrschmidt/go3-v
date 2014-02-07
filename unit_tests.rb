@@ -109,13 +109,15 @@ class Go3Test < Test::Unit::TestCase
   end
 
 
-  # TODO We can test some or all of the points returned with valid_point? method.
   def test_game_board_points_each_method
     game = Game.new
     board = game.board
     points = board.points
+
     total = points.count {|pt| true}
     assert_equal total, 91
+
+    points.each {|pt| assert(board.valid_point?(pt)) }
   end
 
 
@@ -208,7 +210,7 @@ class Go3Test < Test::Unit::TestCase
 
 
   def test_find_same_color_neighbor_groups_1
-    # Add a single point to an existing group
+    # When the point will be added to a single existing group
 
     game = Game.new
     board = game.board
@@ -228,19 +230,12 @@ class Go3Test < Test::Unit::TestCase
     group_points.set_points( {color: :blue, id: 1}, [ [5,2], [6,2] ] )
 
     ngroups = analyzer.find_same_color_neighbor_groups([6,3],:white)
-    assert_equal ngroups.class, Array
-    assert_equal ngroups.size, 1
-    for gp in ngroups
-      assert_equal gp.class, Hash
-      assert gp.keys.include?(:id)
-      assert gp.keys.include?(:stones)
-    end
-
+    assert_equal( ngroups, [ {id: 2, stones: [ [5,3] ]} ] )
   end
 
 
   def test_find_same_color_neighbor_groups_2
-    # Merge two groups and add the new point
+    # When the point will be added to two groups after they are merged
 
     game = Game.new
     board = game.board
@@ -258,15 +253,11 @@ class Go3Test < Test::Unit::TestCase
     group_points.set_points( {color: :white, id: 0}, [ [5,2], [6,2] ] )
     group_points.set_points( {color: :blue, id: 0}, [ [1,2], [2,3], [3,3] ] )
 
-    ngroups = analyzer.find_same_color_neighbor_groups([6,4],:red)
-    assert_equal ngroups.class, Array
-    assert_equal ngroups.size, 2
-    for gp in ngroups
-      assert_equal gp.class, Hash
-      assert gp.keys.include?(:id)
-      assert gp.keys.include?(:stones)
-    end
+    expected = [ {id: 1, stones: [ [6,3], [7,3] ] },
+                 {id: 2, stones: [ [4,4], [5,4] ] } ]
 
+    ngroups = analyzer.find_same_color_neighbor_groups([6,4],:red)
+    assert_contain_same_objects ngroups, expected
   end
 
 
@@ -308,8 +299,6 @@ class Go3Test < Test::Unit::TestCase
     assert_contain_same_objects exp_white2, white2
     assert_contain_same_objects exp_blue0, blue0
     assert_contain_same_objects exp_blue1, blue1
-
-
   end
 
 
@@ -322,54 +311,56 @@ class Go3Test < Test::Unit::TestCase
   end
 
 
-#  def test_find_all_groups_1
-#    game = Game.new
-#    board = game.board
+  def test_find_all_groups_1
+    game = Game.new
+    board = game.board
 
-#    set_test_groups(board,1)
+    set_test_groups(board,1)
 
-#    TODO Replace with assert_rwb_hash
+    # TODO Replace with assert_rwb_hash
 
-#    groups = game.analyzer.find_all_groups()
-#    assert_equal groups.class, Hash
+    groups = game.analyzer.find_all_groups()
+    assert_equal groups.class, Hash
 
-#    red = groups[:red]
-#    white = groups[:white]
-#    blue = groups[:blue]
-#    assert_equal red.class, Array
-#    assert_equal red.size, 1
-#    assert_equal white.class, Array
-#    assert_equal white.size, 3
-#    assert_equal blue.class, Array
-#    assert_equal blue.size, 3
+    red = groups[:red]
+    white = groups[:white]
+    blue = groups[:blue]
+    assert_equal red.class, Array
+    assert_equal red.size, 1
+    assert_equal white.class, Array
+    assert_equal white.size, 3
+    assert_equal blue.class, Array
+    assert_equal blue.size, 3
 
-#    assert_equal red[0].size, 7
-#    expected = [ [2, 4], [3, 4], [4, 5], [4, 6], [3, 7], [4, 7], [5, 7] ]
-#    expected.each {|pt| assert(red[0].include?(pt)) }
+    assert_equal red[0].size, 7
+    expected = [ [2, 4], [3, 4], [4, 5], [4, 6], [3, 7], [4, 7], [5, 7] ]
+    expected.each {|pt| assert(red[0].include?(pt)) }
 
-#    assert_equal white[0].size, 3
-#    expected = [ [2, 3], [3, 2], [3, 3] ]
-#    expected.each {|pt| assert(white[0].include?(pt)) }
+    assert_equal white[0].size, 3
+    expected = [ [2, 3], [3, 2], [3, 3] ]
+    expected.each {|pt| assert(white[0].include?(pt)) }
 
-#    assert_equal white[1].size, 2
-#    expected = [ [7, 4], [8, 5] ]
-#    expected.each {|pt| assert(white[1].include?(pt)) }
+    assert_equal white[1].size, 2
+    expected = [ [7, 4], [8, 5] ]
+    expected.each {|pt| assert(white[1].include?(pt)) }
 
-#    assert_equal white[2].size, 2
-#    expected = [ [10, 7], [10, 8] ]
-#    expected.each {|pt| assert(white[2].include?(pt)) }
+    assert_equal white[2].size, 2
+    expected = [ [10, 7], [10, 8] ]
+    expected.each {|pt| assert(white[2].include?(pt)) }
 
-#    assert_equal blue[0], [ [5, 3] ]
+    assert_equal blue[0], [ [5, 3] ]
 
-#    assert_equal blue[1].size, 2
-#    expected = [ [3, 5], [3, 6] ]
-#    expected.each {|pt| assert(blue[1].include?(pt)) }
+    assert_equal blue[1].size, 2
+    expected = [ [3, 5], [3, 6] ]
+    expected.each {|pt| assert(blue[1].include?(pt)) }
 
-#    assert_equal blue[2].size, 4
-#    expected = [ [7, 8], [8, 8], [7, 9], [9, 9] ]
-#    expected.each {|pt| assert(blue[2].include?(pt)) }
-#  end
+    assert_equal blue[2].size, 4
+    expected = [ [7, 8], [8, 8], [7, 9], [9, 9] ]
+    expected.each {|pt| assert(blue[2].include?(pt)) }
+  end
 
+
+#     TODO FINISH THESE 2 TESTS AND ADD THE assert_rwb METHOD TODO     #
 
 #  def test_find_all_groups_3
 #    game = Game.new

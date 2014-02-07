@@ -360,20 +360,26 @@ class GroupAnalyzer
 
         if neighbor_groups.size == 0
           group = make_new_group(groups, color)
+          gid = group[:id]
         else
-          group = same_color_neighbors[0][:group]
+          gid = neighbor_groups[0][:id]
+          group = {color: color, id: gid}
         end
 
         if neighbor_groups.size > 1
-
+          old_id = neighbor_groups[1][:id]
+          groups[color][gid].concat( groups[color][old_id] )
+          groups[color][old_id] = nil
+          neighbor_groups[1][:stones].each {|pt| @group_points.set_point(pt,group) }
         end
 
-        groups[color][group[:id]] << point
+#        binding.pry
+        groups[color][gid] << point
         @group_points.set_point(point,group)
-        binding.pry
       end
     end
 
+    [:red, :white, :blue].each {|color| groups[color].compact! }
     binding.pry
     return groups
   end
