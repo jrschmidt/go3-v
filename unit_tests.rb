@@ -440,13 +440,13 @@ class Go3Test < Test::Unit::TestCase
     board = game.board
 
     set_test_groups(board,3)
+    groups = analyzer.find_all_groups
 
-    empty_points = analyzer.find_empty_points_for_groups
-    assert_rwb_hash(empty_points, Hash)
+    empty_points = analyzer.find_empty_points_for_groups(groups)
 
-    red = empty_points[:red]
-    white = empty_points[:white]
-    blue = empty_points[:blue]
+    red = empty_points.find_all {|group| group[:color] == :red }
+    white = empty_points.find_all {|group| group[:color] == :white }
+    blue = empty_points.find_all {|group| group[:color] == :blue }
 
     assert_equal red.size, 3
     assert_equal white.size, 4
@@ -512,138 +512,95 @@ class Go3Test < Test::Unit::TestCase
   end
 
 
-#  def test_find_all_one_eyed_groups
-  # TODO Set this aside for now, and implement the 'find all empty points for a
-  # group' method. Then maybe change this method to 'get all one eyed groups',
-  # since it will simply extract them from the results of the other method.
-#    game = Game.new
-#    analyzer = game.analyzer
-#    board = game.board
-
-#    set_test_groups(board,3)
-
-#    expected = {  red: [ ],
-#                white: [  {eye: [5,1], points: [ [6,1], [6,2], [7,2] ]  },
-#                          {eye: [2,7], points: [ [1,6], [2,6], [2,5] ]  }  ]
-#                 blue: [  {eye: [2,2], points: [ [1,1], [2,1] ]  },
-#                          {eye: [2,2], points: [ [3,3], [4,4] ]  },
-#                          {eye: [5,1], points: [ [4,1], [4,2] ]  },
-#                          {eye: [1,3], points: [ [1,4], [1,5] ]  },
-#                          {eye: [5,6], points: [ [3,5], [3,6], [4,6] ]  },
-#                          {eye: [boogers!!!!], points: [ [6,3], [7,3], [8,3] ]  }  ]  }
-
-    # FIXME It looks like this won't work either, because we still need to find
-    # and retain all empty points for each group, so that when we have a group
-    # with only one eye, we can look to see if the group shares that eye with
-    # any other same-color group, where the other group has at least one
-    # additional adjacent empty point in addition to the empty point shared
-    # with the first group. This would make that point a legal playable point.
-
-    # Probably want to replace the find_all_one_eyed_groups method with a
-    # method that returns all points and all adjacent empty points for each group.
-
-
-#    one_eyes = analyzer.find_all_one_eyed_groups
-#    TODO Replace with assert_rwb_hash
-#    assert_equal one_eyes.class, Hash
-#    assert_equal one_eyes[:red].class, Array
-#    assert_equal one_eyes[:white].class, Array
-#    assert_equal one_eyes[:blue].class, Array
-
-#    assert one_eyes[:red] == []
-#    assert_equal one_eyes[:white].size, 2
-#    assert_equal one_eyes[:blue].size, 6
-#    one_eyes[:white].each {|group| assert(expected[:white].include?(group)) }
-#    one_eyes[:blue].each {|group| assert(expected[:blue].include?(group)) }
-
-#  end
 
 
   # Tests Part Three - Legal Moves Methods
 
-#  def test_find_legal_moves
-#    game = Game.new
-#    board = game.board
-#    legal_moves = game.legal_moves
+  def test_find_legal_moves
+    game = Game.new
+    board = game.board
+    legal_moves = game.legal_moves
 
-#    set_test_groups(board,3)
+    set_test_groups(board,3)
 
-#    red_moves = legal_moves.find_legal_moves(:red)
-#    white_moves = legal_moves.find_legal_moves(:white)
-#    blue_moves = legal_moves.find_legal_moves(:blue)
+    red_moves = legal_moves.find_legal_moves(:red)
+    white_moves = legal_moves.find_legal_moves(:white)
+    blue_moves = legal_moves.find_legal_moves(:blue)
 
-#    assert_equal red_moves.size, 48
-#    assert_equal white_moves.size, 48
-#    assert_equal blue_moves.size, 46
+    assert_equal red_moves.size, 48
+    assert_equal white_moves.size, 48
+    assert_equal blue_moves.size, 46
 
-#    assert red_moves.include?([5,1])
-#    assert white_moves.include?([5,1])
-#    assert blue_moves.include?([5,1])
+    # Most Important Test Points:
+    assert red_moves.include?([5,1])
+    assert white_moves.include?([5,1])
+    assert blue_moves.include?([5,1])
 
-#    assert red_moves.include?([5,6])
-#    assert white_moves.include?([5,6])
-#    assert blue_moves.include?([5,6])
+    assert red_moves.include?([5,6])
+    assert white_moves.include?([5,6])
+    assert blue_moves.include?([5,6])
 
-#    assert red_moves.include?([9,4])
-#    assert white_moves.include?([9,4])
-#    assert blue_moves.include?([9,4])
+    assert red_moves.include?([9,4])
+    assert white_moves.include?([9,4])
+    assert blue_moves.include?([9,4])
 
-#    assert red_moves.include?([2,7])
-#    assert white_moves.include?([2,7])
-#    assert blue_moves.include?([2,7])
+    assert red_moves.include?([2,2])
+    assert white_moves.include?([2,2])
+    refute blue_moves.include?([2,2])
 
-#    assert red_moves.include?([7,6])
-#    assert white_moves.include?([7,6])
-#    assert blue_moves.include?([7,6])
+    assert red_moves.include?([1,3])
+    assert white_moves.include?([1,3])
+    refute blue_moves.include?([1,3])
 
-#    assert red_moves.include?([9,7])
-#    assert white_moves.include?([9,7])
-#    assert blue_moves.include?([9,7])
+    # Other Points:
+    assert red_moves.include?([2,7])
+    assert white_moves.include?([2,7])
+    assert blue_moves.include?([2,7])
 
-#    assert red_moves.include?([11,6])
-#    assert white_moves.include?([11,6])
-#    assert blue_moves.include?([11,6])
+    assert red_moves.include?([7,6])
+    assert white_moves.include?([7,6])
+    assert blue_moves.include?([7,6])
 
-#    assert red_moves.include?([6,11])
-#    assert white_moves.include?([6,11])
-#    assert blue_moves.include?([6,11])
+    assert red_moves.include?([9,7])
+    assert white_moves.include?([9,7])
+    assert blue_moves.include?([9,7])
 
-#    assert red_moves.include?([10,11])
-#    assert white_moves.include?([10,11])
-#    assert blue_moves.include?([10,11])
+    assert red_moves.include?([11,6])
+    assert white_moves.include?([11,6])
+    assert blue_moves.include?([11,6])
 
-#    assert red_moves.include?([7,9])
-#    assert white_moves.include?([7,9])
-#    assert blue_moves.include?([7,9])
+    assert red_moves.include?([6,11])
+    assert white_moves.include?([6,11])
+    assert blue_moves.include?([6,11])
 
-#    refute red_moves.include?([3,2])
-#    refute white_moves.include?([3,2])
-#    refute blue_moves.include?([3,2])
+    assert red_moves.include?([10,11])
+    assert white_moves.include?([10,11])
+    assert blue_moves.include?([10,11])
 
-#    refute red_moves.include?([1,4])
-#    refute white_moves.include?([1,4])
-#    refute blue_moves.include?([1,4])
+    assert red_moves.include?([7,9])
+    assert white_moves.include?([7,9])
+    assert blue_moves.include?([7,9])
 
-#    refute red_moves.include?([6,4])
-#    refute white_moves.include?([6,4])
-#    refute blue_moves.include?([6,4])
+    refute red_moves.include?([3,2])
+    refute white_moves.include?([3,2])
+    refute blue_moves.include?([3,2])
 
-#    refute red_moves.include?([5,5])
-#    refute white_moves.include?([5,5])
-#    refute blue_moves.include?([5,5])
+    refute red_moves.include?([1,4])
+    refute white_moves.include?([1,4])
+    refute blue_moves.include?([1,4])
 
-#    refute red_moves.include?([2,6])
-#    refute white_moves.include?([2,6])
-#    refute blue_moves.include?([2,6])
+    refute red_moves.include?([6,4])
+    refute white_moves.include?([6,4])
+    refute blue_moves.include?([6,4])
 
-#    assert red_moves.include?([2,2])
-#    assert white_moves.include?([2,2])
-#    refute blue_moves.include?([2,2])
+    refute red_moves.include?([5,5])
+    refute white_moves.include?([5,5])
+    refute blue_moves.include?([5,5])
 
-#    assert red_moves.include?([1,3])
-#    assert white_moves.include?([1,3])
-#    refute blue_moves.include?([1,3])
-#  end
+    refute red_moves.include?([2,6])
+    refute white_moves.include?([2,6])
+    refute blue_moves.include?([2,6])
+  end
 
 
   # Custom Assertion Methods

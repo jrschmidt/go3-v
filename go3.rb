@@ -4,7 +4,7 @@ require 'sinatra'
 
 require 'coffee-script'
 
-#require 'pry'
+require 'pry'
 
 set :server, %w[webrick thin mongrel]
 
@@ -44,43 +44,6 @@ class Game
     @board = Board.new
     @analyzer = GroupAnalyzer.new(self)
     @legal_moves = LegalMovesFinder.new(self)
-  end
-
-
-  def handle_move(player,point)
-    # TODO
-  end
-
-
-  def make_move(player,point)
-    # TODO
-  end
-
-
-    # TODO
-  def remove_point(point)
-    @board.remove_point(point)
-  end
-
-
-  def send_legal_moves
-    # TODO
-  end
-
-
-  def send_string(game_string)
-
-  end
-
-
-  def get_string
-    str = @board.get_points_string
-    return str
-  end
-
-
-  def get_legal_moves_string
-
   end
 
 
@@ -217,13 +180,9 @@ class GameBoardPoints
       row = []
       st = Board::ROW_START[i]
       ed = Board::ROW_END[i]
-      st.upto(ed) {|k| row[k] = :empty} #TODO The 'row' is actually a diagonal 'column'.
-      @pt_array[i+1] = row #TODO Why is this i & k when the other methods use i & j?
+      st.upto(ed) {|k| row[k] = :empty}
+      @pt_array[i+1] = row
     end
-
-    # TODO
-    #    pt = get_empty_points
-    #    p_string = all_points_to_string(pt)
   end
 
 
@@ -299,38 +258,41 @@ class LegalMovesFinder
     @board = @game.board
     @points = @board.points
     @analyzer = @game.analyzer
+    @group_points = @analyzer.group_points
   end
 
 
-#  def find_legal_moves(color)
-#    moves = []
-#    all_empty_adjacent_points_for_group = {red: [], white: [], blue: []}
-#    one_eye_groups = {red: [], white: [], blue: []}
-#    groups = @analyzer.find_all_groups
+  def find_legal_moves(color)
+    not_legal = []
 
-#    [:red, :white, :blue].each do |color|
-#      groups[color].each do |group|
-#        eyes = @analyzer.find_group_airpoints(group)
+    groups = @analyzer.find_all_groups
+    eyes = @analyzer.find_empty_points_for_groups(groups)
 
+    g1 = eyes.find_all {|gp| gp[:color] == color && gp[:eyes].size == 1 }
+    one_eyes = []
+    g1.each do |gp|
+      nbrs = @board.all_adjacent_points(gp[:eyes][0])
+      one_eyes << gp unless nbrs.find {|pt| @points.get_point(pt) == :empty }
+    end
 
-#      g1 = groups[color].find_all {|group| @analyzer.find_group_airpoints(group).size == 1}
+    one_eyes.each do |gp|
+      pt = gp[:eyes][0]
+      g_share = eyes.find_all {|gpx| gpx[:eyes].include?(pt) }
 
+      if g_share.find {|gpz| gpz[:color] == color && gpz[:eyes].size > 1 }
+        legal = true
+      elsif g_share.find {|gpz| gpz[:color] != color && gpz[:eyes].size == 1 }
+        legal = true
+      else
+        legal = false
+      end
 
+      not_legal << pt if legal == false
+    end
 
-#      one_eye_groups[color].reject! {|group| 
-
-
-
-#      one_eye_groups[color] = groups[color].find_all {|group| @analyzer.find_group_airpoints(group).size == 1}
-#      one_eye_groups[color].reject! {|group| 
-
-#    end
-    
-
-
-#    return moves
-#  end
-
+    moves = @points.find_all {|point| @points.get_point(point) == :empty} - not_legal
+    return moves
+  end
 
 end
 
@@ -413,60 +375,17 @@ class GroupAnalyzer
   end
 
 
-  def find_empty_points_for_groups
-    empty_points = {red: [], white: [], blue: []}
-    groups = find_all_groups
+  def find_empty_points_for_groups(groups)
+    empty_points = []
 
     [:red, :white, :blue].each do |color|
       groups[color].each do |group|
         eyes = find_group_airpoints(group)
-        empty_points[color] << {eyes: eyes, points: group}
+        empty_points << {color: color, eyes: eyes, points: group}
       end
     end
 
     return empty_points
-  end
-
-
-  def find_all_one_eyed_groups
-    one_eyes = {red: [], white: [], blue: []}
-    groups = find_all_groups
-
-    [:red, :white, :blue].each do |color|
-      groups[color].each do |group|
-        airpoints = find_group_airpoints(group)
-        if airpoints.size == 1
-          pt = airpoints[0]
-
-
-        end
-
-
-      end
-    end
-
-###############################################################
-#    all_empty_adjacent_points_for_group = {red: [], white: [], blue: []}
-#    one_eye_groups = {red: [], white: [], blue: []}
-#    groups = @analyzer.find_all_groups
-
-#    [:red, :white, :blue].each do |color|
-#      groups[color].each do |group|
-#        eyes = @analyzer.find_group_airpoints(group)
-
-
-#      g1 = groups[color].find_all {|group| @analyzer.find_group_airpoints(group).size == 1}
-
-
-
-#      one_eye_groups[color].reject! {|group| 
-
-
-
-#      one_eye_groups[color] = groups[color].find_all {|group| @analyzer.find_group_airpoints(group).size == 1}
-#      one_eye_groups[color].reject! {|group| 
-###############################################################
-    return one_eyes
   end
 
 
@@ -475,14 +394,6 @@ class GroupAnalyzer
     groups[color][i] = []
     group = {color: color, id: i}
     return group
-  end
-
-
-  def set_group_id(old_id, new_id)
-    group = @group_points.find_all_points(old_id)
-    group.each do |pt|
-      @group_points.set_point(pt, new_id)
-    end
   end
 
 
