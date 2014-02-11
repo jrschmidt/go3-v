@@ -74,16 +74,29 @@ end
 
 
 class Board
+    # This class models the layout of the actual gameboard.
+
+  include Enumerable
 
   attr :points
 
-  ROW_START = [1,1,1,1,1,1,2,3,4,5,6]
-  ROW_END = [6,7,8,9,10,11,11,11,11,11,11]
+  ROW_START = [nil,1,1,1,1,1,1,2,3,4,5,6]
+  ROW_END = [nil,6,7,8,9,10,11,11,11,11,11,11]
   MIN = 1
   MAX = 11
 
   def initialize
     @points = GameBoardPoints.new()
+  end
+
+
+  def each
+    1.upto(MAX) do |i|
+      ROW_START[i].upto(ROW_END[i]) do |j|
+        pt = [i,j]
+        yield pt
+      end
+    end
   end
 
 
@@ -99,7 +112,7 @@ class Board
       a = point[0]
       b = point[1]
       if a>=MIN && a<= MAX
-        valid = true if b >= ROW_START[a-1] && b <= ROW_END[a-1]
+        valid = true if b >= ROW_START[a] && b <= ROW_END[a]
       end
     end
 
@@ -174,61 +187,32 @@ class GameBoardPoints
 
 
   def initialize
-    @string_builder = PointStringBuilder.new()
-    @pt_array = [nil]
-    Board::ROW_START.each_index do |i|
-      row = []
-      st = Board::ROW_START[i]
-      ed = Board::ROW_END[i]
-      st.upto(ed) {|k| row[k] = :empty}
-      @pt_array[i+1] = row
-    end
-  end
-
-
-    # TODO Wondering if this would be better as a method of Board class
-    # since all it does is return/yield a pair of coordinates for the gameboard.
-  def each
-    1.upto(@pt_array.size-1) do |i|
-      row = @pt_array[i]
-      row.each_index do |j|
-        if not row[j] == nil
-          pt = [j,i]
-          yield pt
-        end
-      end
-    end
-  end
-
-
-  def find_all_points(value)
-    points = []
-    each {|pt| points << pt if get_point(pt) == value}
-    return points
-  end
-
-
-  def get_empty_points
-    points = find_all_points(:empty)
-    return points
+    @point_values = []
   end
 
 
   def get_point(point)
-    a = point[0]
-    b = point[1]
-    val = nil
-    row = b > 0 && b <= Board::MAX ? @pt_array[b] : nil
-    val = row.class == Array ? row[a] : nil
+    result = @point_values.find {|pt| pt[:point] == point }
+    if result == nil
+      val = :empty
+    else
+      val = result[:value]
+    end
     return val
   end
 
 
   def set_point(point,value)
-    a = point[0]
-    b = point[1]
-    row = b > 0 && b <= Board::MAX ? @pt_array[b] : nil
-    row[a] = value if row.class == Array
+    if value == :empty
+      @point_values.delete(value)
+    else
+      zz = @point_values.find {|pt| pt[:point] == point }
+      if zz != nil
+        zz[:value] = value
+      else
+        @point_values << {point: point, value: value}
+      end
+    end
   end
 
 
@@ -252,6 +236,7 @@ end
 
 
 class LegalMovesFinder
+    # A class to find the set of all legal moves for a player
 
   def initialize(game_object)
     @game = game_object
@@ -290,7 +275,7 @@ class LegalMovesFinder
       not_legal << pt if legal == false
     end
 
-    moves = @points.find_all {|point| @points.get_point(point) == :empty} - not_legal
+    moves = @board.find_all {|point| @points.get_point(point) == :empty} - not_legal
     return moves
   end
 
@@ -299,6 +284,7 @@ end
 
 
 class GroupAnalyzer
+    # Provides analysis of groups of stones
 
   attr :group_points
 
@@ -314,7 +300,7 @@ class GroupAnalyzer
   def find_all_groups
     groups = {red: [], white: [], blue: []}
 
-    @points.each do |point|
+    @board.each do |point|
       if @points.get_point(point) != :empty
         color = @points.get_point(point)
 
@@ -370,8 +356,7 @@ class GroupAnalyzer
 
 
   def get_group_stones(color, id)
-    return @points.find_all {|point| @group_points.get_point(point) == {color: color, id: id} }
-
+    return @board.find_all {|point| @group_points.get_point(point) == {color: color, id: id} }
   end
 
 
@@ -411,6 +396,7 @@ end
 
 
 class PointStringBuilder
+    # A class that encodes a set of points into a string
 
   HEX_D = {10 => "a",
            11 => "b",
