@@ -74,7 +74,9 @@ end
 
 
 class Board
-    # This class models the layout of the actual gameboard.
+    # This class models the layout of the gameboard.
+    # (The positions of stones on the board are represented by an instance of
+    # the GameBoardPoints class.)
 
   include Enumerable
 
@@ -97,11 +99,6 @@ class Board
         yield pt
       end
     end
-  end
-
-
-  def get_points_string
-    @points.get_string
   end
 
 
@@ -219,17 +216,6 @@ class GameBoardPoints
   def set_points(value, points_array)
     points_array.each {|pt| set_point(pt,value)}
   end
-
-
-  # TODO Temporarily, this method returns the set of all empty points. Later
-  #      we will need to add functionality to compute legal points as the game
-  #      progresses.
-  # FIXME Get rid of the 4 layers of method calls to get to this method!!!
-  #       Which class should really call the string builder method?
-  def get_string
-    @string_builder.get_string(find_all_points(:empty))
-  end
-
 
 end
 
@@ -405,13 +391,7 @@ class PointStringBuilder
            14 => "e",
            15 => "f" }
 
-  def get_string(points)
-    str = all_points_to_string(points)
-    return str
-  end
-
-
-  def all_points_to_string(points)
+  def points_to_string(points)
     str = points.map {|pt| point_to_string(pt)}.join
     return str
   end
@@ -429,13 +409,12 @@ class PointStringBuilder
     return dd
   end
 
-
 end
 
 
 
 def go_string
-  @@game = Game.new if defined?(@@game) == nil
+  @@game = @@game || Game.new
   str = @@game.get_string
   return str
 end
