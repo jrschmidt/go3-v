@@ -1,15 +1,7 @@
-
-require '~/Desktop/go3/go3'
-
-require 'test/unit'
-
-
-
+# Tests for Legal Moves Methods
 class LegalMovesTest < Test::Unit::TestCase
-
-  def app
-    Sinatra::Application
-  end
+  include TestHelpers
+  include TestData
 
 
   def test_find_legal_moves
