@@ -58,12 +58,32 @@ class GameplayManager
 
   def initialize(game_object)
     @game = game_object
+    @board = @game.board
+    @points = @board.points
+
     @current_player = :red
+  end
+
+
+  def make_a_move(player,point)
+    @points.set_point(point,player)
   end
 
 
   def whose_turn?
     return @current_player
+  end
+
+
+  def next_player
+    case @current_player
+    when :red
+      @current_player = :white
+    when :white
+      @current_player = :blue
+    when :blue
+      @current_player = :red
+    end
   end
 
 
