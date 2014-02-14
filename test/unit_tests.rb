@@ -16,6 +16,9 @@ require './test/game_analysis_test.rb'
 # Tests for Legal Moves Methods
 require './test/legal_moves_test.rb'
 
+# Tests for Points To String Methods
+require './test/points_to_string_test.rb'
+
 
 class Go3Test < Test::Unit::TestCase
   include TestData

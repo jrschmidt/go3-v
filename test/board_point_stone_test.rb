@@ -100,38 +100,11 @@ class BoardPointStoneTest < Test::Unit::TestCase
   def test_game_board_points_each_method
     game = Game.new
     board = game.board
-    points = board.points
 
-    total = points.count {|pt| true}
+    total = board.count {|pt| true}
     assert_equal total, 91
 
-    points.each {|pt| assert(board.valid_point?(pt)) }
-  end
-
-
-  def test_find_all_points
-    game = Game.new
-    board = game.board
-    points = board.points
-    assert_equal points.find_all_points(:empty).size, 91
-
-    set_test_groups(board,1)
-    assert_equal points.find_all_points(:red).size, 7
-    assert_equal points.find_all_points(:white).size, 7
-    assert_equal points.find_all_points(:blue).size, 7
-    assert_equal points.find_all_points(:empty).size, 70
-  end
-
-
-  def test_get_empty_points
-    game = Game.new
-    board = game.board
-    points = board.points
-
-    assert_equal points.get_empty_points.size, 91
-
-    set_test_groups(board,1)
-    assert_equal points.get_empty_points.size, 70
+    board.each {|pt| assert(board.valid_point?(pt)) }
   end
 
 
