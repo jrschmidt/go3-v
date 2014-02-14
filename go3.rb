@@ -37,13 +37,33 @@ end
 
 class Game
 
-  attr :board, :analyzer, :legal_moves
+  attr :board, :analyzer, :legal_moves, :manager
 
 
   def initialize
     @board = Board.new
     @analyzer = GroupAnalyzer.new(self)
     @legal_moves = LegalMovesFinder.new(self)
+    @manager = GameplayManager.new(self)
+  end
+
+
+end
+
+
+
+class GameplayManager
+
+  COLORS = [:red, :white, :blue]
+
+  def initialize(game_object)
+    @game = game_object
+    @current_player = :red
+  end
+
+
+  def whose_turn?
+    return @current_player
   end
 
 

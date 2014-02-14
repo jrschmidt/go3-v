@@ -19,6 +19,9 @@ require './test/legal_moves_test.rb'
 # Tests for Points To String Methods
 require './test/points_to_string_test.rb'
 
+# Tests for Gameplay Control Methods
+require './test/gameplay_control_test.rb'
+
 
 class Go3Test < Test::Unit::TestCase
   include TestData
