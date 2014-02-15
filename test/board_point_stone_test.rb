@@ -84,16 +84,18 @@ class BoardPointStoneTest < Test::Unit::TestCase
     points.set_points :red, [ [4,4], [9,9] ]
     points.set_points :white, [ [4,6], [2,3] ]
     points.set_points :blue, [ [5,9], [3,4] ]
-    assert_equal  points.get_point([4,4]), :red
-    assert_equal  points.get_point([9,9]), :red
-    assert_equal  points.get_point([4,6]), :white
-    assert_equal  points.get_point([2,3]), :white
-    assert_equal  points.get_point([5,9]), :blue
-    assert_equal  points.get_point([3,4]), :blue
-    assert_equal  points.get_point([3,3]), :empty
-    assert_equal  points.get_point([7,10]), :empty
-    assert_equal  points.get_point([11,11]), :empty
-    assert_equal  points.get_point([6,3]), :empty
+    assert_equal points.get_point([4,4]), :red
+    assert_equal points.get_point([9,9]), :red
+    assert_equal points.get_point([4,6]), :white
+    assert_equal points.get_point([2,3]), :white
+    assert_equal points.get_point([5,9]), :blue
+    assert_equal points.get_point([3,4]), :blue
+    assert_equal points.get_point([3,3]), :empty
+    assert_equal points.get_point([7,10]), :empty
+    assert_equal points.get_point([11,11]), :empty
+    assert_equal points.get_point([6,3]), :empty
+    points.set_points :white, [ [6,6] ]
+    assert_equal points.get_point([6,6]), :white
   end
 
 

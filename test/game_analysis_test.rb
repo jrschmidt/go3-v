@@ -308,6 +308,122 @@ class GameAnalysisTest < Test::Unit::TestCase
   end
 
 
+  def test_find_dead_groups
+    game = Game.new
+    board = game.board
+    points = board.points
+    analyzer = game.analyzer
+
+    points.set_point([3,4], :red)
+    assert_equal analyzer.dead_groups?(:white), []
+    assert_equal analyzer.dead_groups?(:blue), []
+
+    points.set_point([4,5], :white)
+    assert_equal analyzer.dead_groups?(:red), []
+    assert_equal analyzer.dead_groups?(:blue), []
+
+    points.set_point([5,6], :blue)
+    assert_equal analyzer.dead_groups?(:red), []
+    assert_equal analyzer.dead_groups?(:white), []
+
+    points.set_point([5,5], :red)
+    assert_equal analyzer.dead_groups?(:white), []
+    assert_equal analyzer.dead_groups?(:blue), []
+
+    points.set_point([11,8], :white)
+    assert_equal analyzer.dead_groups?(:red), []
+    assert_equal analyzer.dead_groups?(:blue), []
+
+    points.set_point([4,6], :blue)
+    assert_equal analyzer.dead_groups?(:red), []
+    assert_equal analyzer.dead_groups?(:white), []
+
+    points.set_point([4,4], :red)
+    assert_equal analyzer.dead_groups?(:white), []
+    assert_equal analyzer.dead_groups?(:blue), []
+
+    points.set_point([11,9], :white)
+    assert_equal analyzer.dead_groups?(:red), []
+    assert_equal analyzer.dead_groups?(:blue), []
+
+    # BLUE PLAY AT [3,5] KILLS WHITE STONE AT [4,5]
+    points.set_point([3,5], :blue)
+    assert_equal analyzer.dead_groups?(:red), []
+    wh = analyzer.dead_groups?(:white)
+    assert wh.include? [ [4,5] ]
+
+    points.set_point([10,7], :red)
+    # List of dead white groups will be unchanged
+    assert_equal analyzer.dead_groups?(:white), wh
+    assert_equal analyzer.dead_groups?(:blue), []
+
+    points.set_point([5,8], :white)
+    assert_equal analyzer.dead_groups?(:red), []
+    assert_equal analyzer.dead_groups?(:blue), []
+
+    points.set_point([10,9], :blue)
+    assert_equal analyzer.dead_groups?(:red), []
+    assert_equal analyzer.dead_groups?(:white), wh
+
+    points.set_point([10,8], :red)
+    assert_equal analyzer.dead_groups?(:white), wh
+    assert_equal analyzer.dead_groups?(:blue), []
+
+    points.set_point([7,10], :white)
+    assert_equal analyzer.dead_groups?(:red), []
+    assert_equal analyzer.dead_groups?(:blue), []
+
+    points.set_point([11,10], :blue)
+    assert_equal analyzer.dead_groups?(:red), []
+    assert_equal analyzer.dead_groups?(:white), wh
+
+    # RED PLAY AT [11,7] KILLS WHITE STONES AT [11,8] and [11,9]
+    points.set_point([11,7], :red)
+    assert_equal analyzer.dead_groups?(:blue), []
+    wh = analyzer.dead_groups?(:white)
+    assert (wh.include? [ [11,8], [11,9] ] ) || (wh.include? [ [11,9], [11,8] ] )
+  end
+
+
+  def test_make_move_remove_dead_groups
+    game = Game.new
+    manager = game.manager
+    analyzer = game.analyzer
+
+    manager.make_a_move(:red, [3,4])
+    manager.make_a_move(:white, [4,5])
+    manager.make_a_move(:blue, [5,6])
+    manager.make_a_move(:red, [5,5])
+    manager.make_a_move(:white, [11,8])
+    manager.make_a_move(:blue, [4,6])
+    manager.make_a_move(:red, [4,4])
+    manager.make_a_move(:white, [11,9])
+
+    # BLUE PLAY AT [3,5] KILLS WHITE STONE AT [4,5]
+    # We don't find the dead white group because it's already been removed by
+    # the remove_dead_stones_after_move method, which was called by make_a_move.
+    manager.make_a_move(:blue, [3,5])
+    assert_equal analyzer.dead_groups?(:red), []
+    assert_equal analyzer.dead_groups?(:white), []
+
+    manager.make_a_move(:red, [10,7])
+    manager.make_a_move(:white, [5,8])
+    manager.make_a_move(:blue, [10,9])
+    manager.make_a_move(:red, [10,8])
+    manager.make_a_move(:white, [7,10])
+    manager.make_a_move(:blue, [11,10])
+
+    # RED PLAY AT [11,7] KILLS WHITE STONES AT [11,8] and [11,9]
+    # We don't find the dead white group because it's already been removed by
+    # the remove_dead_stones_after_move method, which was called by make_a_move.
+    manager.make_a_move(:red, [11,7])
+    assert_equal analyzer.dead_groups?(:white), []
+    assert_equal analyzer.dead_groups?(:blue), []
+
+
+  end
+
+
 end
 
 

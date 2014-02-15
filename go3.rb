@@ -38,6 +38,7 @@ class GameplayManager
     @game = game_object
     @board = @game.board
     @points = @board.points
+    @analyzer = @game.analyzer
 
     @players = {}
     @players[:red] = HumanPlayer.new(@game, :red)
@@ -68,6 +69,20 @@ class GameplayManager
   def make_a_move(player,point)
     @points.set_point(point,player)
     puts "Player #{player} makes a move at #{point}"
+
+    remove_dead_stones_after_move(player)
+  end
+
+
+  def remove_dead_stones_after_move(player)
+    opponents = [:red, :white, :blue]
+    opponents.delete(player)
+    opponents.each do |opp|
+      dead_groups = @analyzer.dead_groups?(opp)
+      dead_groups.each do |grp|
+        @points.set_points(:empty, grp)
+      end
+    end
   end
 
 
@@ -273,7 +288,7 @@ class GameBoardPoints
 
   def set_point(point,value)
     if value == :empty
-      @point_values.delete(value)
+      @point_values.delete_if {|pt| pt[:point] == point }
     else
       zz = @point_values.find {|pt| pt[:point] == point }
       if zz != nil
@@ -386,6 +401,21 @@ class GroupAnalyzer
 
     [:red, :white, :blue].each {|color| groups[color].compact! }
     return groups
+  end
+
+
+  def dead_groups?(color)
+    dead_groups = []
+
+    groups = find_all_groups
+    own_groups = groups[color]
+
+    own_groups.each do |grp|
+      eyes = find_group_airpoints(grp)
+      dead_groups << grp if eyes == []
+    end
+
+    return dead_groups
   end
 
 
