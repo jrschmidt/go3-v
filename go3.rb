@@ -6,33 +6,6 @@ require 'coffee-script'
 
 require 'pry'
 
-set :server, %w[webrick thin mongrel]
-
-set :port, 4533
-
-
-get '/' do
-  erb :index
-end
-
-
-get '/javascripts/go3.js' do
-  coffee :go3
-end
-
-
-get '/legal-points' do
-  str = @@game.get_string
-  str
-end
-
-
-post '/legal-points' do
-  str = @@game.get_string
-  msg_in = request.body.read
-  puts(msg_in)
-  str
-end
 
 
 class Game
@@ -45,6 +18,11 @@ class Game
     @analyzer = GroupAnalyzer.new(self)
     @legal_moves = LegalMovesFinder.new(self)
     @manager = GameplayManager.new(self)
+  end
+
+
+  def start
+    @manager.start
   end
 
 
@@ -61,12 +39,35 @@ class GameplayManager
     @board = @game.board
     @points = @board.points
 
+    @players = {}
+    @players[:red] = HumanPlayer.new(@game, :red)
+    @players[:white] = AiPlayer.new(@game, :white)
+    @players[:blue] = AiPlayer.new(@game, :blue)
+
     @current_player = :red
+  end
+
+
+  # ("Console Play" Version)
+  def start
+    stop = false
+    until stop do
+      point = get_next_move(@current_player)
+      make_a_move(@current_player,point)
+      next_player
+    end
+  end
+
+
+  def get_next_move(player)
+    move = @players[player].get_move
+    return move
   end
 
 
   def make_a_move(player,point)
     @points.set_point(point,player)
+    puts "Player #{player} makes a move at #{point}"
   end
 
 
@@ -93,8 +94,13 @@ end
 
 class Player
 
-  def get_move
-    # TODO
+  attr :color
+
+  def initialize(game,color)
+    @game = game
+    @legal_moves = @game.legal_moves
+
+    @color = color
   end
 
 end
@@ -103,11 +109,37 @@ end
 
 class HumanPlayer < Player
 
+  # (CONSOLE Play Version)
+  def get_move
+    str = gets
+    return string_to_point(str)
+  end
+
+
+  def string_to_point(string)
+    point = []
+    pt = string.split(",")
+    point[0] = pt[0].to_i
+    point[1] = pt[1].to_i
+    return point
+  end
+
 end
 
 
 
 class AiPlayer < Player
+
+  # AI VERSION:  0.01
+
+  # Random selection from set of legal playable points. No additional heuristic.
+
+  def get_move
+    open = @legal_moves.find_legal_moves(@color)
+    move = open.sample
+    return move
+  end
+
 
 end
 
@@ -450,15 +482,6 @@ class PointStringBuilder
   end
 
 end
-
-
-
-def go_string
-  @@game = @@game || Game.new
-  str = @@game.get_string
-  return str
-end
-
 
 
 
