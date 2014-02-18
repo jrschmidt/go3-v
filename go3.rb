@@ -320,35 +320,57 @@ class LegalMovesFinder
   end
 
 
-  def find_legal_moves(color)
+  def find_legal_moves(player_color)
     not_legal = []
 
     groups = @analyzer.find_all_groups
     eyes = @analyzer.find_empty_points_for_groups(groups)
 
-    g1 = eyes.find_all {|gp| gp[:color] == color && gp[:eyes].size == 1 }
-    one_eyes = []
-    g1.each do |gp|
-      nbrs = @board.all_adjacent_points(gp[:eyes][0])
-      one_eyes << gp unless nbrs.find {|pt| @points.get_point(pt) == :empty }
+    # TODO Let's refactor this part to find all 'one-eyes' for all colors.
+    # Then we can use one_eyes[:color] like we do here, and one_eyes[:other_color_1]
+    # and one_eyes[:other_color_2] to find the 'isolated one-eyes'.
+
+
+    [:red, :white, :blue].each do |color|
+      g1 = eyes.find_all {|gp| gp[:color] == color && gp[:eyes].size == 1 }
+      one_eyes = []
+      g1.each do |gp|
+        nbrs = @board.all_adjacent_points(gp[:eyes][0])
+        one_eyes << gp unless nbrs.find {|pt| @points.get_point(pt) == :empty }
+      end
     end
 
-    one_eyes.each do |gp|
+    one_eyes[player_color].each do |gp|
       pt = gp[:eyes][0]
       g_share = eyes.find_all {|gpx| gpx[:eyes].include?(pt) }
-
-      if g_share.find {|gpz| gpz[:color] == color && gpz[:eyes].size > 1 }
+      if g_share.find {|gpz| gpz[:color] == player_color && gpz[:eyes].size > 1 }
         legal = true
-      elsif g_share.find {|gpz| gpz[:color] != color && gpz[:eyes].size == 1 }
+      elsif g_share.find {|gpz| gpz[:color] != player_color && gpz[:eyes].size == 1 }
         legal = true
       else
         legal = false
       end
-
       not_legal << pt if legal == false
     end
 
+    # TODO  -- FINDING 'ISOLATE' ONE-EYES --
+
+    # FIXME HERE WE GO THROUGH THE ONE-EYE GROUPS FOR OTHER COLORS, AND ADD THEM TO
+    # not_legal[] IF: There is no neighboring stone for player_color, AND
+    #                 Each of the neighbor groups for the point have more than one eye.
+
+
     moves = @board.find_all {|point| @points.get_point(point) == :empty} - not_legal
+
+    # FIXME We aren't doing this, we have a better idea (see ln:329 note)
+    moves.each do |pt|
+      ok = true
+      nbrs = @board.all_adjacent_points(pt)
+      if nbrs.find {|ptt| @points.get_point(ptt) == :empty } == nil &&
+         nbrs.find {|ptc| @points.get_point(ptc) == color } == nil &&
+         # TODO Each Neighbor Group Has More Than One Eye
+    end
+
     return moves
   end
 
