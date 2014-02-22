@@ -9,15 +9,15 @@ class LegalMovesTest < Test::Unit::TestCase
     board = game.board
     legal_moves = game.legal_moves
 
-    set_test_groups(board,3) # FIXME NO REFERENCE TO THIS METHOD AFTER SPLIT
+    set_test_groups(board,3)
 
     red_moves = legal_moves.find_legal_moves(:red)
     white_moves = legal_moves.find_legal_moves(:white)
     blue_moves = legal_moves.find_legal_moves(:blue)
 
-    assert_equal red_moves.size, 48
-    assert_equal white_moves.size, 48
-    assert_equal blue_moves.size, 46
+    assert_equal red_moves.size, 45
+    assert_equal white_moves.size, 46
+    assert_equal blue_moves.size, 44
 
     # Most Important Test Points:
     assert red_moves.include?([5,1])
@@ -40,14 +40,14 @@ class LegalMovesTest < Test::Unit::TestCase
     assert white_moves.include?([1,3])
     refute blue_moves.include?([1,3])
 
+    assert red_moves.include?([7,6])
+    assert white_moves.include?([7,6])
+    refute blue_moves.include?([7,6])
+
     # Other Points:
     assert red_moves.include?([2,7])
     assert white_moves.include?([2,7])
     assert blue_moves.include?([2,7])
-
-    assert red_moves.include?([7,6])
-    assert white_moves.include?([7,6])
-    assert blue_moves.include?([7,6])
 
     assert red_moves.include?([9,7])
     assert white_moves.include?([9,7])

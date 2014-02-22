@@ -164,7 +164,7 @@ class GameAnalysisTest < Test::Unit::TestCase
     white_exp = [ [ [3,4], [4,5], [5,5], [5,4], [6,4], [7,4], [8,4] ],
                   [ [1,6], [2,6], [2,5] ],
                   [ [6,1], [7,2], [6,2] ],
-                  [ [6,7], [7,7] ] ]
+                  [ [6,7], [7,7], [8,7] ] ]
 
     white_exp.each do |xgrp|
       assert_not_nil white.find {|group| contain_same_objects(xgrp,group) }
@@ -176,7 +176,7 @@ class GameAnalysisTest < Test::Unit::TestCase
                  [ [6,3], [7,3], [8,3] ], 
                  [ [1,4], [1,5] ], 
                  [ [3,5], [3,6], [4,6] ], 
-                 [ [6,6], [6,5], [7,5] ] ]
+                 [ [6,6], [6,5], [7,5], [8,6] ] ]
 
     blue_exp.each do |xgrp|
       assert_not_nil blue.find {|group| contain_same_objects(xgrp,group) }
@@ -271,8 +271,8 @@ class GameAnalysisTest < Test::Unit::TestCase
                   {eyes: [[5,6], [8,5], [9,5], [9,4]],
                    points: [[3,4], [4,5], [5,5], [5,4], [6,4], [7,4], [8,4]] },
 
-                  {eyes: [[6,8], [7,8], [8,8], [8,7], [5,6], [7,6]],
-                   points: [[6,7], [7,7]] } ]
+                  {eyes: [[6,8], [7,8], [8,8], [9,8], [9,7], [5,6], [7,6]],
+                   points: [[6,7], [7,7], [8,7]] } ]
 
     white_exp.each do |xgrp|
       assert_not_nil white.find {|group| contain_same_objects(xgrp[:eyes], group[:eyes]) }
@@ -297,8 +297,8 @@ class GameAnalysisTest < Test::Unit::TestCase
                  {eyes: [[9,4]],
                   points: [[6,3], [7,3], [8,3]] },
 
-                 {eyes: [[5,6], [7,6], [8,6], [8,5]],
-                  points: [[6,6], [6,5], [7,5]] } ]
+                 {eyes: [[5,6], [7,6], [8,5], [9,6], [9,7]],
+                  points: [[6,6], [6,5], [7,5], [8,6]] } ]
 
     blue_exp.each do |xgrp|
       assert_not_nil blue.find {|group| contain_same_objects(xgrp[:eyes], group[:eyes]) }
@@ -422,6 +422,30 @@ class GameAnalysisTest < Test::Unit::TestCase
 
 
   end
+
+
+  def test_find_one_eye_points
+    game = Game.new
+    board = game.board
+    analyzer = game.analyzer
+    points = board.points
+
+    set_test_groups(board,3)
+
+    eyes = analyzer.find_one_eye_points
+    assert_equal eyes.class, Array
+    assert eyes.include? [2,2]
+    assert eyes.include? [1,3]
+    assert eyes.include? [5,1]
+    assert eyes.include? [5,6]
+    assert eyes.include? [7,6]
+    refute eyes.include? [9,4]
+    refute eyes.include? [4,4]
+    refute eyes.include? [10,9]
+    refute eyes.include? [8,10]
+
+  end
+
 
 
 end

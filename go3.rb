@@ -46,6 +46,8 @@ class GameplayManager
     @players[:blue] = AiPlayer.new(@game, :blue)
 
     @current_player = :red
+
+    puts "" # ("Console Play" Version)
   end
 
 
@@ -326,23 +328,17 @@ class LegalMovesFinder
     groups = @analyzer.find_all_groups
     eyes = @analyzer.find_empty_points_for_groups(groups)
 
-    # TODO Let's refactor this part to find all 'one-eyes' for all colors.
-    # Then we can use one_eyes[:color] like we do here, and one_eyes[:other_color_1]
-    # and one_eyes[:other_color_2] to find the 'isolated one-eyes'.
+    one_eye_groups = []
 
-
-    [:red, :white, :blue].each do |color|
-      g1 = eyes.find_all {|gp| gp[:color] == color && gp[:eyes].size == 1 }
-      one_eyes = []
-      g1.each do |gp|
-        nbrs = @board.all_adjacent_points(gp[:eyes][0])
-        one_eyes << gp unless nbrs.find {|pt| @points.get_point(pt) == :empty }
-      end
+    g1 = eyes.find_all {|gp| gp[:color] == player_color && gp[:eyes].size == 1 }
+    g1.each do |gp|
+      nbrs = @board.all_adjacent_points(gp[:eyes][0])
+      one_eye_groups << gp unless nbrs.find {|pt| @points.get_point(pt) == :empty }
     end
 
-    one_eyes[player_color].each do |gp|
-      pt = gp[:eyes][0]
-      g_share = eyes.find_all {|gpx| gpx[:eyes].include?(pt) }
+    one_eye_groups.each do |gp|
+      point = gp[:eyes][0]
+      g_share = eyes.find_all {|gpx| gpx[:eyes].include?(point) }
       if g_share.find {|gpz| gpz[:color] == player_color && gpz[:eyes].size > 1 }
         legal = true
       elsif g_share.find {|gpz| gpz[:color] != player_color && gpz[:eyes].size == 1 }
@@ -350,26 +346,20 @@ class LegalMovesFinder
       else
         legal = false
       end
-      not_legal << pt if legal == false
+      not_legal << point if legal == false
     end
 
-    # TODO  -- FINDING 'ISOLATE' ONE-EYES --
+    
+  #FIXME This is just groups of other color with one eye.
+  # What we want is to find single, isolated eyes surrounded
+  # by groups of the other 2 colors, then eliminate them 
+  # UNLESS the eye is the only eye for at least one of the groups
 
-    # FIXME HERE WE GO THROUGH THE ONE-EYE GROUPS FOR OTHER COLORS, AND ADD THEM TO
-    # not_legal[] IF: There is no neighboring stone for player_color, AND
-    #                 Each of the neighbor groups for the point have more than one eye.
+
+
 
 
     moves = @board.find_all {|point| @points.get_point(point) == :empty} - not_legal
-
-    # FIXME We aren't doing this, we have a better idea (see ln:329 note)
-    moves.each do |pt|
-      ok = true
-      nbrs = @board.all_adjacent_points(pt)
-      if nbrs.find {|ptt| @points.get_point(ptt) == :empty } == nil &&
-         nbrs.find {|ptc| @points.get_point(ptc) == color } == nil &&
-         # TODO Each Neighbor Group Has More Than One Eye
-    end
 
     return moves
   end
@@ -438,6 +428,18 @@ class GroupAnalyzer
     end
 
     return dead_groups
+  end
+
+
+  def find_one_eye_points
+    one_eye_points = []
+    empty_points = @board.find_all {|pt| @points.get_point(pt) == :empty }
+    empty_points.each do |point|
+      nbrs = @board.all_adjacent_points(point)
+      empty_nbrs = nbrs.find {|pt| @points.get_point(pt) == :empty }
+      one_eye_points << point if empty_nbrs == nil
+    end
+    return one_eye_points
   end
 
 
