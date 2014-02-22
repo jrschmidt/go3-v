@@ -177,7 +177,7 @@ class Board
   MAX = 11
 
   def initialize
-    @points = GameBoardPoints.new()
+    @points = GameBoardPoints.new(self)
   end
 
 
@@ -272,7 +272,8 @@ class GameBoardPoints
   include Enumerable
 
 
-  def initialize
+  def initialize(board)
+    @board = board
     @point_values = []
   end
 
@@ -305,6 +306,14 @@ class GameBoardPoints
   def set_points(value, points_array)
     points_array.each {|pt| set_point(pt,value)}
   end
+
+
+  def neighbors_with_value(point,value)
+    nbrs = @board.all_adjacent_points(point)
+    nbv = nbrs.find_all {|pt| get_point(pt) == value }
+    return nbv
+  end
+
 
 end
 
@@ -355,8 +364,8 @@ class LegalMovesFinder
   # by groups of the other 2 colors, then eliminate them 
   # UNLESS the eye is the only eye for at least one of the groups
 
-
-
+    single_eyes = @analyzer.find_one_eye_points
+#    other_color_one_eyes = single_eyes.find_all {|eye| eye.find {|pt| @points.get_points(pt) } }
 
 
     moves = @board.find_all {|point| @points.get_point(point) == :empty} - not_legal
@@ -378,7 +387,7 @@ class GroupAnalyzer
     @board = @game.board
     @points = @board.points
 
-    @group_points = GameBoardPoints.new()
+    @group_points = GameBoardPoints.new(@board)
   end
 
 

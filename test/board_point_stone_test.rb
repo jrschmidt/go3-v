@@ -171,6 +171,19 @@ class BoardPointStoneTest < Test::Unit::TestCase
   end
 
 
+  def test_neighbors_with_value
+    game = Game.new
+    board = game.board
+    points = board.points
+
+    expected_3_3 = [ [2,2], [3,2], [2,3], [4,3], [3,4], [4,4] ]
+
+    assert_contain_same_objects points.neighbors_with_value([3,3], :empty), expected_3_3
+
+
+  end
+
+
 end
 
 
