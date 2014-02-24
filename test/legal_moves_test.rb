@@ -5,7 +5,6 @@ class LegalMovesTest < Test::Unit::TestCase
 
 
   def test_find_legal_moves
-#    skip
     game = Game.new
     board = game.board
     legal_moves = game.legal_moves
@@ -41,9 +40,9 @@ class LegalMovesTest < Test::Unit::TestCase
     assert white_moves.include?([1,3])
     refute blue_moves.include?([1,3])
 
-    assert red_moves.include?([7,6])
+    refute red_moves.include?([7,6])
     assert white_moves.include?([7,6])
-    refute blue_moves.include?([7,6])
+    assert blue_moves.include?([7,6])
 
     # Other Points:
     assert red_moves.include?([2,7])

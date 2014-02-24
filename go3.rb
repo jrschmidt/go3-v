@@ -358,24 +358,16 @@ class LegalMovesFinder
       not_legal << point if legal == false
     end
 
-    
-  #FIXME This is just groups of other color with one eye.
-  # What we want is to find single, isolated eyes surrounded
-  # by groups of the other 2 colors, then eliminate them 
-  # UNLESS the eye is the only eye for at least one of the groups
-
     single_eyes = @analyzer.find_one_eye_points
     other_color_one_eyes = []
     single_eyes.each do |eye|
       other_color_one_eyes << eye if @points.neighbors_with_value(eye,player_color) == []
     end
 
-#    other_color_one_eyes.each do |eye|
-#      not_legal << eye if ## there is a group in the neighbor groups where <eye> is only eye for group
-                          #  It might be better here to get the id's for neighbor groups instead of
-                          #  just checking colors, then using the groups to check for additional 
-
-#    end
+    other_color_one_eyes.each do |eye|
+      nbr_grps = @analyzer.find_other_color_neighbor_groups(eye,player_color)
+      not_legal << eye unless nbr_grps.find {|grp| @analyzer.find_group_airpoints(grp[:stones]).size == 1 }
+    end
 
     moves = @board.find_all {|point| @points.get_point(point) == :empty} - not_legal
 
