@@ -365,8 +365,17 @@ class LegalMovesFinder
   # UNLESS the eye is the only eye for at least one of the groups
 
     single_eyes = @analyzer.find_one_eye_points
-#    other_color_one_eyes = single_eyes.find_all {|eye| eye.find {|pt| @points.get_points(pt) } }
+    other_color_one_eyes = []
+    single_eyes.each do |eye|
+      other_color_one_eyes << eye if @points.neighbors_with_value(eye,player_color) == []
+    end
 
+#    other_color_one_eyes.each do |eye|
+#      not_legal << eye if ## there is a group in the neighbor groups where <eye> is only eye for group
+                          #  It might be better here to get the id's for neighbor groups instead of
+                          #  just checking colors, then using the groups to check for additional 
+
+#    end
 
     moves = @board.find_all {|point| @points.get_point(point) == :empty} - not_legal
 
@@ -398,7 +407,7 @@ class GroupAnalyzer
       if @points.get_point(point) != :empty
         color = @points.get_point(point)
 
-        neighbor_groups = find_same_color_neighbor_groups(point,color)
+        neighbor_groups = find_prior_same_color_neighbor_groups(point,color)
 
         if neighbor_groups.size == 0
           group = make_new_group(groups, color)
@@ -452,12 +461,39 @@ class GroupAnalyzer
   end
 
 
-  def find_same_color_neighbor_groups(point,color)
+  def find_prior_same_color_neighbor_groups(point,color)
+    find_neighbor_groups(point, color, :previous)
+  end
+
+
+  def find_other_color_neighbor_groups(point,first_color)
+    oc_nbrs = []
+    others = [:red, :white, :blue] - [first_color]
+    others.each do |color|
+      nb = find_neighbor_groups(point, color, :all)
+      nb.each do |grp|
+        grp[:color] = color
+        oc_nbrs << grp
+      end
+    end
+    return oc_nbrs
+  end
+
+
+  def find_neighbor_groups(point,color,search_type)
     neighbor_groups = []
     group_ids = []
 
+    if search_type == :previous
+      search_vector = @board.all_previous_adjacent_points(point)
+    elsif search_type == :all
+      search_vector = @board.all_adjacent_points(point)
+    else
+      search_vector = []
+    end
+
     amigos = []
-    for nb in @board.all_previous_adjacent_points(point)
+    for nb in search_vector
       amigos << nb if @points.get_point(nb) == color
     end
 

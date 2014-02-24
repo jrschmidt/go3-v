@@ -24,7 +24,7 @@ class GameAnalysisTest < Test::Unit::TestCase
     group_points.set_points( {color: :blue, id: 0}, [ [1,2], [2,3] ] )
     group_points.set_points( {color: :blue, id: 1}, [ [5,2], [6,2] ] )
 
-    ngroups = analyzer.find_same_color_neighbor_groups([6,3],:white)
+    ngroups = analyzer.find_prior_same_color_neighbor_groups([6,3],:white)
     assert_equal( ngroups, [ {id: 2, stones: [ [5,3] ]} ] )
   end
 
@@ -51,8 +51,37 @@ class GameAnalysisTest < Test::Unit::TestCase
     expected = [ {id: 1, stones: [ [6,3], [7,3] ] },
                  {id: 2, stones: [ [4,4], [5,4] ] } ]
 
-    ngroups = analyzer.find_same_color_neighbor_groups([6,4],:red)
+    ngroups = analyzer.find_prior_same_color_neighbor_groups([6,4],:red)
     assert_contain_same_objects ngroups, expected
+  end
+
+
+  def test_find_other_color_neighbor_groups
+
+    game = Game.new
+    board = game.board
+    analyzer = game.analyzer
+    points = board.points
+    group_points = game.analyzer.group_points
+
+    points.set_points :red, [ [3,3], [4,3] ]
+    points.set_points :white, [ [3,1], [2,2], [3,2], [5,1], [6,1], [5,3] ]
+    points.set_points :blue, [ [1,2], [2,3], [5,2], [6,2] ]
+
+    group_points.set_points( {color: :red, id: 0}, [ [3,3], [4,3] ] )
+    group_points.set_points( {color: :white, id: 0}, [ [3,1], [2,2], [3,2] ] )
+    group_points.set_points( {color: :white, id: 1}, [ [5,1], [6,1] ] )
+    group_points.set_points( {color: :white, id: 2}, [ [5,3] ] )
+    group_points.set_points( {color: :blue, id: 0}, [ [1,2], [2,3] ] )
+    group_points.set_points( {color: :blue, id: 1}, [ [5,2], [6,2] ] )
+
+    ocgroups = analyzer.find_other_color_neighbor_groups([4,2],:white)
+    nbr_red = ocgroups.find {|grp| grp[:color] == :red }
+    nbr_blue = ocgroups.find {|grp| grp[:color] == :blue }
+
+    assert_not_nil nbr_red
+    assert_not_nil nbr_blue
+
   end
 
 

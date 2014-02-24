@@ -176,9 +176,48 @@ class BoardPointStoneTest < Test::Unit::TestCase
     board = game.board
     points = board.points
 
-    expected_3_3 = [ [2,2], [3,2], [2,3], [4,3], [3,4], [4,4] ]
+    points.set_point([3,3], :red)
+    points.set_point([4,3], :red)
+    points.set_point([6,4], :white)
+    points.set_point([6,5], :white)
+    points.set_point([4,4], :blue)
+    points.set_point([4,5], :blue)
 
-    assert_contain_same_objects points.neighbors_with_value([3,3], :empty), expected_3_3
+    expected_3_4_r = [ [3,3] ]
+    expected_3_4_b = [ [4,4], [4,5] ]
+    expected_3_4_e = [ [2,3], [2,4], [3,5] ]
+
+    assert_contain_same_objects points.neighbors_with_value([3,4], :red), expected_3_4_r
+    assert_contain_same_objects points.neighbors_with_value([3,4], :blue), expected_3_4_b
+    assert_contain_same_objects points.neighbors_with_value([3,4], :empty), expected_3_4_e
+
+    expected_5_4_r = [ [4,3] ]
+    expected_5_4_w = [ [6,4], [6,5] ]
+    expected_5_4_b = [ [4,4] ]
+    expected_5_4_e = [ [5,3], [5,5] ]
+
+    assert_contain_same_objects points.neighbors_with_value([5,4], :red), expected_5_4_r
+    assert_contain_same_objects points.neighbors_with_value([5,4], :white), expected_5_4_w
+    assert_contain_same_objects points.neighbors_with_value([5,4], :blue), expected_5_4_b
+    assert_contain_same_objects points.neighbors_with_value([5,4], :empty), expected_5_4_e
+
+    expected_5_5_w = [ [6,5] ]
+    expected_5_5_b = [ [4,4], [4,5] ]
+    expected_5_5_e = [ [5,4], [5,6], [6,6] ]
+
+    assert_contain_same_objects points.neighbors_with_value([5,5], :white), expected_5_5_w
+    assert_contain_same_objects points.neighbors_with_value([5,5], :blue), expected_5_5_b
+    assert_contain_same_objects points.neighbors_with_value([5,5], :empty), expected_5_5_e
+
+    expected_7_5_w = [ [6,4], [6,5] ]
+    expected_7_5_e = [ [7,4], [8,5], [7,6], [8,6] ]
+
+    assert_contain_same_objects points.neighbors_with_value([7,5], :white), expected_7_5_w
+    assert_contain_same_objects points.neighbors_with_value([7,5], :empty), expected_7_5_e
+
+    expected_5_9_e = [ [4,8], [5,8], [4,9], [6,9], [5,10], [6,10] ]
+
+    assert_contain_same_objects points.neighbors_with_value([5,9], :empty), expected_5_9_e
 
 
   end

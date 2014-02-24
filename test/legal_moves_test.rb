@@ -5,7 +5,7 @@ class LegalMovesTest < Test::Unit::TestCase
 
 
   def test_find_legal_moves
-    skip
+#    skip
     game = Game.new
     board = game.board
     legal_moves = game.legal_moves
