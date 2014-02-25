@@ -138,14 +138,14 @@ class ClickHandler
   click_handle: (x,y) ->
     point = @canvas_object.get_point(x,y)
     if @lmo.legal_move(point)
-#      alert("legal move")
+      alert("legal move")
       @canvas_object.draw_stone(point,"R")
       msg_out = @hex_string(point)
       @connection = new ServerConnection()
       @connection.send(msg_out)
       msg_in = @connection.receive()
       @update_legal_moves(msg_in)
-#      alert (msg_in)
+      alert (msg_in)
 
 
   update_legal_moves: (msg) ->

@@ -416,6 +416,8 @@ class GameAnalysisTest < Test::Unit::TestCase
 
   def test_make_move_remove_dead_groups
     game = Game.new
+    board = game.board
+    points = board.points
     manager = game.manager
     analyzer = game.analyzer
 
@@ -432,6 +434,7 @@ class GameAnalysisTest < Test::Unit::TestCase
     # We don't find the dead white group because it's already been removed by
     # the remove_dead_stones_after_move method, which was called by make_a_move.
     manager.make_a_move(:blue, [3,5])
+    assert_equal points.get_point([4,5]), :empty
     assert_equal analyzer.dead_groups?(:red), []
     assert_equal analyzer.dead_groups?(:white), []
 
@@ -446,6 +449,8 @@ class GameAnalysisTest < Test::Unit::TestCase
     # We don't find the dead white group because it's already been removed by
     # the remove_dead_stones_after_move method, which was called by make_a_move.
     manager.make_a_move(:red, [11,7])
+    assert_equal points.get_point([11,8]), :empty
+    assert_equal points.get_point([11,9]), :empty
     assert_equal analyzer.dead_groups?(:white), []
     assert_equal analyzer.dead_groups?(:blue), []
 

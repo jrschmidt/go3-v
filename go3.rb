@@ -6,6 +6,33 @@ require 'coffee-script'
 
 require 'pry'
 
+set :server, %w[webrick thin mongrel]
+
+set :port, 4533
+
+
+get '/' do
+  erb :index
+end
+
+
+get '/javascripts/go3.js' do
+  coffee :go3
+end
+
+
+get '/legal-points' do
+  str = @game.get_string
+  str
+end
+
+
+post '/legal-points' do
+  str = @game.get_string
+  msg_in = request.body.read
+  puts(msg_in)
+  str
+end
 
 
 class Game
@@ -574,5 +601,13 @@ class PointStringBuilder
 
 end
 
+
+
+def go_string
+  puts "go_string METHOD CALLED"
+  @game = @game || Game.new
+  str = @game.get_string
+  return str
+end
 
 
