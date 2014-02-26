@@ -28,6 +28,7 @@ end
 
 
 post '/legal-points' do
+  @game = @game || Game.new
   str = @game.get_string
   msg_in = request.body.read
   puts(msg_in)
@@ -50,6 +51,11 @@ class Game
 
   def start
     @manager.start
+  end
+
+
+  def get_string
+    return "TEST STRING <Game##get_string>"
   end
 
 

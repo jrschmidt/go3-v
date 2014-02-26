@@ -106,8 +106,9 @@ class LegalPlayablePoints
 
 
   legal_move: (point) ->
+    alert("point = "+point[0]+", "+point[1])
     point_in = @points.some (p) -> p.a == point[0] and p.b == point[1]
-#    alert("legal_move = "+point_in)
+    alert("legal_move = "+point_in)
     return point_in
 
 
