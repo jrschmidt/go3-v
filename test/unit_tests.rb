@@ -17,7 +17,7 @@ require './test/game_analysis_test.rb'
 require './test/legal_moves_test.rb'
 
 # Tests for Points To String Methods
-require './test/points_to_string_test.rb'
+require './test/points_and_string_tests.rb'
 
 # Tests for Gameplay Control Methods
 require './test/gameplay_control_test.rb'

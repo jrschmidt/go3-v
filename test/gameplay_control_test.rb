@@ -45,12 +45,6 @@ class GameplayControlTest < Test::Unit::TestCase
     board = game.board
     points = board.points
 
-  # ("Console Play" Version)
-  # --    --    --
-    puts ""
-    puts "START 'Console Play' VERSION"
-  # --    --    --
-
     manager.make_a_move(:red, [3,4])
     assert_equal points.get_point([3,4]), :red
 

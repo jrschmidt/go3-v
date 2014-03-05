@@ -22,16 +22,16 @@ end
 
 
 get '/legal-points' do
-  str = @game.get_string
+  str = @game.legal_moves_to_string
   str
 end
 
 
 post '/legal-points' do
   @game = @game || Game.new
-  str = @game.get_string
   msg_in = request.body.read
   puts(msg_in)
+  str = @game.handle_client_input(msg_in)
   str
 end
 
@@ -49,13 +49,8 @@ class Game
   end
 
 
-  def start
-    @manager.start
-  end
-
-
-  def get_string
-    return "TEST STRING <Game##get_string>"
+  def handle_client_input(msg_in)
+    return @manager.handle_client_input(msg_in)
   end
 
 
@@ -78,33 +73,34 @@ class GameplayManager
     @players[:white] = AiPlayer.new(@game, :white)
     @players[:blue] = AiPlayer.new(@game, :blue)
 
+    @human_player = @players[:red]
+    @ai_players = [ @players[:white], @players[:blue] ]
+
     @current_player = :red
-
-    puts "" # ("Console Play" Version)
-  end
-
-
-  # ("Console Play" Version)
-  def start
-    stop = false
-    until stop do
-      point = get_next_move(@current_player)
-      make_a_move(@current_player,point)
-      next_player
-    end
   end
 
 
   def get_next_move(player)
+    binding.pry
     move = @players[player].get_move
     return move
   end
 
 
+  def handle_client_input(input_string)
+    point = @board.string_to_point(input_string)
+    make_a_move(@human_player, point)
+    @ai_players.each do |player|
+      binding.pry
+      point = get_next_move(player.color)
+      make_a_move(player,point)
+      binding.pry
+    end
+  end
+
+
   def make_a_move(player,point)
     @points.set_point(point,player)
-    puts "Player #{player} makes a move at #{point}"
-
     remove_dead_stones_after_move(player)
   end
 
@@ -153,26 +149,36 @@ class Player
     @color = color
   end
 
+
+  # TODO TODO Now we need a method to send the AI moves to the client, and add something
+  #           to the client script to draw the new moves on the game board.
+
+
 end
 
 
 
 class HumanPlayer < Player
 
-  # (CONSOLE Play Version)
+  attr :client_move
+
+  # TODO set_client_move method to change @client_move after receiving remote input
+
   def get_move
+    return get_remote_move
+  end
+
+
+  def get_console_move
     str = gets
     return string_to_point(str)
   end
 
 
-  def string_to_point(string)
-    point = []
-    pt = string.split(",")
-    point[0] = pt[0].to_i
-    point[1] = pt[1].to_i
-    return point
+  def get_remote_move
+    return string_to_point(client_move)
   end
+
 
 end
 
@@ -236,6 +242,19 @@ class Board
     end
 
     return valid
+  end
+
+
+  def string_to_point(string)
+    point = []
+    if string.size == 2
+      string.each_char do |ch|
+        if ["1","2","3","4","5","6","7","8","9","a","b"].include?(ch)
+          point << ch.to_i(16)
+        end
+      end
+    end
+    return point
   end
 
 
@@ -612,7 +631,7 @@ end
 def go_string
   puts "go_string METHOD CALLED"
   @game = @game || Game.new
-  str = @game.get_string
+  str = @game.legal_moves_to_string
   return str
 end
 

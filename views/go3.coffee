@@ -179,16 +179,9 @@ class ServerConnection
 
 
   receive: () ->
-    # FIXME This will not run without this alert here. Apparently, the alert
-    # provides a necessary stop which gives this script time to wait and
-    # receive the XHR response. I could be wrong about that. The odd part is
-    # that for some reason, the app will run just fine in the Jasmine
-    # SpecRunner.html page without the alert, and you can just keep adding
-    # red stones to the game board in rapid succession. Same result for any
-    # standalone html page run directly in the browser without the server.
-    # FIXME FIXME THE canvas TAG IN THE SpecRunner.html PAGE HAS
-    # FIXME FIXME "<%= go_string %>" FOR THE VALUE OF THE data-go-game
-    # FIXME FIXME ATTRIBUTE INSTEAD OF THE ACTUAL VALUES.
+
+    # FIXME For some reason, in some cases, it won't work without this (possibly
+    #       because it needs time to wait for the response?).
     alert ("ready state = "+@xhr.readyState)
     msg = @xhr.responseText
     return msg
@@ -214,6 +207,10 @@ class GameCanvas
 
 
   get_point: (x,y) ->
+    # First, use rectangular coordinates to determine which gameboard point to
+    # check, then use the radius from the pixel at the center of the gameboard point
+    # to see if it's close enough to map the mouse click to that point.
+
     point = []
     a = -1
     b = -1

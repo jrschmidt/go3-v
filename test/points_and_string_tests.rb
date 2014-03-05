@@ -64,11 +64,31 @@ class PointsToStringTest < Test::Unit::TestCase
 
   def test_points_to_string
     stringer = PointStringBuilder.new
-    hex = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b"]
     points = [ [3,6], [9,9], [8,11], [10,11], [7,10], [2,5], [9,8], [8,3], [5,4], [6,10] ]
     string = stringer.points_to_string(points)
 
     assert_equal string, "36998bab7a259883546a"
+  end
+
+
+  def test_string_to_point
+    game = Game.new
+    board = game.board
+    stringer = PointStringBuilder.new
+
+    assert_equal board.string_to_point("11"), [1,1]
+    assert_equal board.string_to_point("16"), [1,6]
+    assert_equal board.string_to_point("55"), [5,5]
+    assert_equal board.string_to_point("94"), [9,4]
+    assert_equal board.string_to_point("a5"), [10,5]
+    assert_equal board.string_to_point("8a"), [8,10]
+    assert_equal board.string_to_point("42"), [4,2]
+    assert_equal board.string_to_point("a9"), [10,9]
+    assert_equal board.string_to_point("b6"), [11,6]
+    assert_equal board.string_to_point("ba"), [11,10]
+    assert_equal board.string_to_point("bb"), [11,11]
+    refute_equal board.string_to_point("33"), [4,4]
+    refute_equal board.string_to_point("8b"), [7,2]
   end
 
 
