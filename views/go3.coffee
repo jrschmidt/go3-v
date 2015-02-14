@@ -141,7 +141,8 @@ class ClickHandler
     if @lmo.legal_move(point)
       console.log("legal move")
       @canvas_object.draw_stone(point,"R")
-      msg_out = @hex_string(point)
+      obj_out = {red: point}
+      msg_out = JSON.stringify(obj_out)
       @connection = new ServerConnection()
       @connection.send(msg_out)
       msg_in = @connection.receive()
@@ -153,17 +154,17 @@ class ClickHandler
     @lmo.update_legal_moves(msg)
 
 
-  hex_string: (point) ->
-    hx = "00"
-    if point[0]>0 && point[0]<=11 && point[1]>0 && point[1]<=11
-      hx = @hex_digit(point[0]) + @hex_digit(point[1])
+  # hex_string: (point) ->
+  #   hx = "00"
+  #   if point[0]>0 && point[0]<=11 && point[1]>0 && point[1]<=11
+  #     hx = @hex_digit(point[0]) + @hex_digit(point[1])
 
 
-  hex_digit: (number) ->
-    if number>0 && number <=11
-      hd = @hex_d[number]
-    else hd = "0"
-    hd
+  # hex_digit: (number) ->
+  #   if number>0 && number <=11
+  #     hd = @hex_d[number]
+  #   else hd = "0"
+  #   hd
 
 
 

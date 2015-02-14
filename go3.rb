@@ -6,6 +6,8 @@ require 'coffee-script'
 
 require 'pry'
 
+require 'json'
+
 set :server, %w[webrick thin mongrel]
 
 set :port, 4533
@@ -91,18 +93,20 @@ class GameplayManager
 
 
   def handle_client_input(input_string)
-    point = @board.string_to_point(input_string)
+    pt = JSON.parse(input_string)
+    point = pt["red"]
     make_a_move(@human_player, point)
+    response = {}
     @ai_players.each do |player|
-      # binding.pry
-      point = get_next_move(player.color)
-      make_a_move(player,point)
-      str = @pt2str.point_to_string(point)
       binding.pry
-      # FIXME THIS is the source of the problem. It's supposed to return something (a string).
-      # It seems to choose a random empty point correctly. We need to return a string representing that point.
-      return str
+      color = player.color
+      point = get_next_move(color)
+      make_a_move(player,point)
+      response[color] = point
+      binding.pry
     end
+    str = response.to_json
+    return str
   end
 
 
