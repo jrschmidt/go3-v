@@ -139,26 +139,32 @@ class ClickHandler
   click_handle: (x,y) ->
     point = @canvas_object.get_point(x,y)
     if @lmo.legal_move(point)
-      console.log("legal move")
+      console.log("click_handle (legal move)")
       @canvas_object.draw_stone(point,"R")
       obj_out = {red: point}
       msg_out = JSON.stringify(obj_out)
-      @connection = new ServerConnection()
-      @connection.send(msg_out)
-      msg_in = @connection.receive()
-      @update_legal_moves(msg_in)
-      console.log (msg_in)
+      xhr = new XMLHttpRequest()
+      url = "/legal-points"
+      xhr.open('POST',url)
+      xhr.onreadystatechange = ->
+        if (xhr.readyState == 4 && xhr.status == 200)
+          console.log ("ready state = #{xhr.readyState}")
+          msg_in = xhr.responseText
+          console.log ("msg_in = #{msg_in}")
+          @update_legal_moves(msg_in)
+      xhr.send(msg_out)
 
 
-  update_legal_moves: (msg) ->
-    @lmo.update_legal_moves(msg)
+  # @connection = new ServerConnection()
+  # @connection.send(msg_out)
 
+  # update_legal_moves: (msg) ->
+  #   @lmo.update_legal_moves(msg)
 
   # hex_string: (point) ->
   #   hx = "00"
   #   if point[0]>0 && point[0]<=11 && point[1]>0 && point[1]<=11
   #     hx = @hex_digit(point[0]) + @hex_digit(point[1])
-
 
   # hex_digit: (number) ->
   #   if number>0 && number <=11
@@ -166,26 +172,38 @@ class ClickHandler
   #   else hd = "0"
   #   hd
 
+# class ServerConnection
+#
+#   constructor: () ->
+#     @xhr = new XMLHttpRequest()
+#     url = "/legal-points"
+#     @xhr.open('POST',url)
+#
+#   send: (msg) ->
+#      @xhr.send(msg)
+#      @xhr.onreadystatechange = ->
+#        if (@xhr.readyState == 4 && @xhr.status == 200)
+#          console.log ("ready state = #{@xhr.readyState}")
+#          msg_in = @xhr.responseText
+#          console.log ("msg_in = #{msg_in}")
+#          @update_legal_moves(msg_in)
 
+      # request.onreadystatechange = function() {
+      # // Define event listener
+      # // If the request is compete and was successful
+      # if (request.readyState === 4 && request.status === 200) {
+      #
+      # msg_in = @connection.receive()
+      # console.log ("msg_in = #{msg_in}")
+      # @update_legal_moves(msg_in)
 
-class ServerConnection
-
-  constructor: () ->
-    @xhr = new XMLHttpRequest()
-    url = "/legal-points"
-    @xhr.open('POST',url)
-
-  send: (msg) ->
-     @xhr.send(msg)
-
-
-  receive: () ->
-
-    # FIXME For some reason, in some cases, it won't work without this (possibly
-    #       because it needs time to wait for the response?).
-    console.log ("ready state = "+@xhr.readyState)
-    msg = @xhr.responseText
-    return msg
+  # receive: () ->
+  #
+  #   # FIXME For some reason, in some cases, it won't work without this (possibly
+  #   #       because it needs time to wait for the response?).
+  #   console.log ("ready state = "+@xhr.readyState)
+  #   msg = @xhr.responseText
+  #   return msg
 
 
 
