@@ -24,10 +24,10 @@ get '/javascripts/go3.js' do
 end
 
 
-get '/legal-points' do
-  str = @game.legal_moves_to_string
-  str
-end
+# get '/legal-points' do
+#   str = @game.legal_moves_to_string
+#   str
+# end
 
 
 post '/legal-points' do
@@ -72,6 +72,7 @@ class GameplayManager
     @points = @board.points
     @analyzer = @game.analyzer
     @pt2str = PointStringBuilder.new
+    @legal_moves = @game.legal_moves
 
     @players = {}
     @players[:red] = HumanPlayer.new(@game, :red)
@@ -86,7 +87,6 @@ class GameplayManager
 
 
   def get_next_move(player)
-    # binding.pry
     move = @players[player].get_move
     return move
   end
@@ -98,13 +98,13 @@ class GameplayManager
     make_a_move(@human_player, point)
     response = {}
     @ai_players.each do |player|
-      binding.pry
       color = player.color
       point = get_next_move(color)
       make_a_move(player,point)
       response[color] = point
-      binding.pry
     end
+    legal = @legal_moves.find_legal_moves(:red)
+    response[:red] = legal
     str = response.to_json
     return str
   end
@@ -156,15 +156,8 @@ class Player
   def initialize(game,color)
     @game = game
     @legal_moves = @game.legal_moves
-
     @color = color
   end
-
-
-  # TODO TODO Now we need a method to send the AI moves to the client, and add something
-  #           to the client script to draw the new moves on the game board.
-
-
 end
 
 
@@ -356,7 +349,6 @@ class GameBoardPoints
     if value == :empty
       @point_values.delete_if {|pt| pt[:point] == point }
     else
-      # binding.pry
       zz = @point_values.find {|pt| pt[:point] == point }
       if zz != nil
         zz[:value] = value
@@ -466,7 +458,6 @@ class GroupAnalyzer
         neighbor_groups = find_prior_same_color_neighbor_groups(point,color)
 
         if neighbor_groups.size == 0
-          # binding.pry
           group = make_new_group(groups, color)
           gid = group[:id]
         else
@@ -641,9 +632,9 @@ end
 
 
 
-def go_string
-  puts "JRS:  go_string METHOD CALLED"
-  @game = @game || Game.new
-  str = @game.legal_moves_to_string
-  return str
-end
+# def go_string
+#   puts "JRS:  go_string METHOD CALLED"
+#   @game = @game || Game.new
+#   str = @game.legal_moves_to_string
+#   return str
+# end
