@@ -106,9 +106,9 @@ class LegalPlayablePoints
 
 
   legal_move: (point) ->
-    alert("point = "+point[0]+", "+point[1])
+    console.log("point = "+point[0]+", "+point[1])
     point_in = @points.some (p) -> p.a == point[0] and p.b == point[1]
-    alert("legal_move = "+point_in)
+    console.log("legal_move = "+point_in)
     return point_in
 
 
@@ -139,14 +139,14 @@ class ClickHandler
   click_handle: (x,y) ->
     point = @canvas_object.get_point(x,y)
     if @lmo.legal_move(point)
-      alert("legal move")
+      console.log("legal move")
       @canvas_object.draw_stone(point,"R")
       msg_out = @hex_string(point)
       @connection = new ServerConnection()
       @connection.send(msg_out)
       msg_in = @connection.receive()
       @update_legal_moves(msg_in)
-      alert (msg_in)
+      console.log (msg_in)
 
 
   update_legal_moves: (msg) ->
@@ -164,7 +164,7 @@ class ClickHandler
       hd = @hex_d[number]
     else hd = "0"
     hd
-      
+
 
 
 class ServerConnection
@@ -182,7 +182,7 @@ class ServerConnection
 
     # FIXME For some reason, in some cases, it won't work without this (possibly
     #       because it needs time to wait for the response?).
-    alert ("ready state = "+@xhr.readyState)
+    console.log ("ready state = "+@xhr.readyState)
     msg = @xhr.responseText
     return msg
 
@@ -382,6 +382,3 @@ start = () ->
 
 
 window.onload = start
-
-
-

@@ -12,6 +12,7 @@ set :port, 4533
 
 
 get '/' do
+  puts "JRS:  server root ..... '/'"
   erb :index
 end
 
@@ -30,8 +31,9 @@ end
 post '/legal-points' do
   @game = @game || Game.new
   msg_in = request.body.read
-  puts(msg_in)
+  puts "JRS:  msg_in = #{msg_in}"
   str = @game.handle_client_input(msg_in)
+  puts "JRS:  str = #{str}"
   str
 end
 
@@ -81,7 +83,7 @@ class GameplayManager
 
 
   def get_next_move(player)
-    binding.pry
+    # binding.pry
     move = @players[player].get_move
     return move
   end
@@ -91,16 +93,18 @@ class GameplayManager
     point = @board.string_to_point(input_string)
     make_a_move(@human_player, point)
     @ai_players.each do |player|
-      binding.pry
+      # binding.pry
       point = get_next_move(player.color)
       make_a_move(player,point)
       binding.pry
+      # FIXME THIS is the source of the problem. It's supposed to return something (a string).
+      # It seems to choose a random empty point correctly. We need to return a string representing that point.
     end
   end
 
 
   def make_a_move(player,point)
-    @points.set_point(point,player)
+    @points.set_point(point,player.color)
     remove_dead_stones_after_move(player)
   end
 
@@ -345,6 +349,7 @@ class GameBoardPoints
     if value == :empty
       @point_values.delete_if {|pt| pt[:point] == point }
     else
+      # binding.pry
       zz = @point_values.find {|pt| pt[:point] == point }
       if zz != nil
         zz[:value] = value
@@ -454,6 +459,7 @@ class GroupAnalyzer
         neighbor_groups = find_prior_same_color_neighbor_groups(point,color)
 
         if neighbor_groups.size == 0
+          # binding.pry
           group = make_new_group(groups, color)
           gid = group[:id]
         else
@@ -629,10 +635,8 @@ end
 
 
 def go_string
-  puts "go_string METHOD CALLED"
+  puts "JRS:  go_string METHOD CALLED"
   @game = @game || Game.new
   str = @game.legal_moves_to_string
   return str
 end
-
-
