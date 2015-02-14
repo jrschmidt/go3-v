@@ -69,6 +69,7 @@ class GameplayManager
     @board = @game.board
     @points = @board.points
     @analyzer = @game.analyzer
+    @pt2str = PointStringBuilder.new
 
     @players = {}
     @players[:red] = HumanPlayer.new(@game, :red)
@@ -96,9 +97,11 @@ class GameplayManager
       # binding.pry
       point = get_next_move(player.color)
       make_a_move(player,point)
+      str = @pt2str.point_to_string(point)
       binding.pry
       # FIXME THIS is the source of the problem. It's supposed to return something (a string).
       # It seems to choose a random empty point correctly. We need to return a string representing that point.
+      return str
     end
   end
 
