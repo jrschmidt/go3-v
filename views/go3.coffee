@@ -12,13 +12,16 @@ class Zipper
   constructor: () ->
     @board_specs = new BoardDimensions()
     @board = new Board(this)
-    @lpp = new LegalPlayablePoints(this)
-    @clickster = new ClickHandler(@lpp,@board.drawing_object)
+    legal_points = new LegalPlayablePoints
+    @clickster = new ClickHandler(@lpo,@board.drawing_object)
 
 
   click: (x,y) ->
     @clickster.click_handle(x,y)
 
+
+  update: (points) ->
+    @lpo.update_legal_moves(points)
 
 
 class BoardDimensions
@@ -89,15 +92,16 @@ class LegalPlayablePoints
 #      objects. What is the "correct" or best way to do this?
 
   constructor: (main_object) ->
-    @board = main_object.board
-    @board_specs = main_object.board_specs
+    @row_start = [1,1,1,1,1,1,2,3,4,5,6]
+    @row_end = [6,7,8,9,10,11,11,11,11,11,11]
     @points = @get_init_legal_moves()
+
 
 
   get_init_legal_moves: () ->
     points = []
     for i in [0..10]
-      for j in [@board_specs.row_start[i]..@board_specs.row_end[i]]
+      for j in [@row_start[i]..@row_end[i]]
         pp = {}
         pp.a = j
         pp.b = i+1
@@ -112,8 +116,21 @@ class LegalPlayablePoints
     return point_in
 
 
-  update_legal_moves: (points_string) ->
-    @points = @parse_points(points_string)
+  update_legal_moves: (points) ->
+    console.log "LegalPlayablePoints#update_legal_moves()"
+    console.log "  points.length = #{points.length}"
+    console.log "  points[0] = #{points[0]}"
+    console.log "  points[1] = #{points[1]}"
+    console.log "  points[14] = #{points[14]}"
+    console.log "  points[56] = #{points[56]}"
+    console.log "  points[70] = #{points[70]}"
+    console.log "  points[87] = #{points[87]}"
+    @points = []
+    @points.push(pt) for pt in points
+
+
+  # update_legal_moves: (points_string) ->
+  #   @points = @parse_points(points_string)
 
 
   parse_points: (points_string) ->
@@ -138,8 +155,11 @@ class ClickHandler
 
   click_handle: (x,y) ->
     point = @canvas_object.get_point(x,y)
-    if @lmo.legal_move(point)
-      console.log("click_handle (legal move)")
+    console.log "ClickHandler#click_handle(x,y)"
+    console.log "  point = [#{point[0]},#{point[1]}]"
+    lmo = @lmo
+    if lmo.legal_move(point)
+      console.log "click_handle: legal_move = true"
       @canvas_object.draw_stone(point,"R")
       obj_out = {red: point}
       msg_out = JSON.stringify(obj_out)
@@ -151,59 +171,12 @@ class ClickHandler
           console.log ("ready state = #{xhr.readyState}")
           msg_in = xhr.responseText
           console.log ("msg_in = #{msg_in}")
-          @update_legal_moves(msg_in)
+          response = JSON.parse(msg_in)
+          points = response.red
+          update(points)
       xhr.send(msg_out)
-
-
-  # @connection = new ServerConnection()
-  # @connection.send(msg_out)
-
-  # update_legal_moves: (msg) ->
-  #   @lmo.update_legal_moves(msg)
-
-  # hex_string: (point) ->
-  #   hx = "00"
-  #   if point[0]>0 && point[0]<=11 && point[1]>0 && point[1]<=11
-  #     hx = @hex_digit(point[0]) + @hex_digit(point[1])
-
-  # hex_digit: (number) ->
-  #   if number>0 && number <=11
-  #     hd = @hex_d[number]
-  #   else hd = "0"
-  #   hd
-
-# class ServerConnection
-#
-#   constructor: () ->
-#     @xhr = new XMLHttpRequest()
-#     url = "/legal-points"
-#     @xhr.open('POST',url)
-#
-#   send: (msg) ->
-#      @xhr.send(msg)
-#      @xhr.onreadystatechange = ->
-#        if (@xhr.readyState == 4 && @xhr.status == 200)
-#          console.log ("ready state = #{@xhr.readyState}")
-#          msg_in = @xhr.responseText
-#          console.log ("msg_in = #{msg_in}")
-#          @update_legal_moves(msg_in)
-
-      # request.onreadystatechange = function() {
-      # // Define event listener
-      # // If the request is compete and was successful
-      # if (request.readyState === 4 && request.status === 200) {
-      #
-      # msg_in = @connection.receive()
-      # console.log ("msg_in = #{msg_in}")
-      # @update_legal_moves(msg_in)
-
-  # receive: () ->
-  #
-  #   # FIXME For some reason, in some cases, it won't work without this (possibly
-  #   #       because it needs time to wait for the response?).
-  #   console.log ("ready state = "+@xhr.readyState)
-  #   msg = @xhr.responseText
-  #   return msg
+    else
+      console.log "click_handle: legal_move = false"
 
 
 
@@ -385,6 +358,10 @@ class BoardLines
     context.closePath()
 
 
+# GLOBAL level (global to this document)
+
+
+
 @mousedown = (e) ->
   @canvas = document.getElementById('go-board')
   dx = @canvas.offsetLeft
@@ -396,8 +373,15 @@ class BoardLines
   @zip.click(x,y)
 
 
+update = (points) ->
+  console.log "update() [GLOBAL]"
+  @zip.update(points)
+
+
 start = () ->
+  
   @zip = new Zipper()
+
 
 
 window.onload = start
