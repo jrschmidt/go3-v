@@ -12,11 +12,11 @@ class Zipper
   constructor: () ->
     @board = new Board(this)
     legal_points = new LegalPlayablePoints
-    @clickster = new ClickHandler(@lpo,@board.drawing_object)
+    # @clickster = new ClickHandler(@lpo,@board.drawing_object)
 
 
-  click: (x,y) ->
-    @clickster.click_handle(x,y)
+  # click: (x,y) ->
+  #   @clickster.click_handle(x,y)
 
 
   update: (points) ->
@@ -68,7 +68,7 @@ class Board
               [[5,1], [11,7]],
               [[6,1], [11,6]] ]
 
-    @drawing_object = new GameCanvas(this)
+    # @drawing_object = new CanvasHelper(this)
 
 
 
@@ -133,44 +133,41 @@ class LegalPlayablePoints
     return points
 
 
-class ClickHandler
-
-  constructor: (legal_moves_object,canvas_object) ->
-
-    @hex_d = ["0","1","2","3","4","5","6","7","8","9","a","b"] #[CONSTANTS]
-
-    @lmo = legal_moves_object
-    @canvas_object = canvas_object
-
-
-  click_handle: (x,y) ->
-    point = @canvas_object.get_point(x,y)
-    console.log "ClickHandler#click_handle(x,y)"
-    console.log "  point = [#{point[0]},#{point[1]}]"
-    lmo = @lmo
-    if lmo.legal_move(point)
-      console.log "click_handle: legal_move = true"
-      @canvas_object.draw_stone(point,"R")
-      obj_out = {red: point}
-      msg_out = JSON.stringify(obj_out)
-      xhr = new XMLHttpRequest()
-      url = "/legal-points"
-      xhr.open('POST',url)
-      xhr.onreadystatechange = ->
-        if (xhr.readyState == 4 && xhr.status == 200)
-          console.log ("ready state = #{xhr.readyState}")
-          msg_in = xhr.responseText
-          console.log ("msg_in = #{msg_in}")
-          response = JSON.parse(msg_in)
-          points = response.red
-          update(points)
-      xhr.send(msg_out)
-    else
-      console.log "click_handle: legal_move = false"
+# class ClickHandler
+#
+#   constructor: (legal_moves_object,canvas_object) ->
+#     @lmo = legal_moves_object
+#     @canvas_object = canvas_object
+#
+#
+#   click_handle: (x,y) ->
+#     point = @canvas_object.get_point(x,y)
+#     console.log "ClickHandler#click_handle(x,y)"
+#     console.log "  point = [#{point[0]},#{point[1]}]"
+#     lmo = @lmo
+#     if lmo.legal_move(point)
+#       console.log "click_handle: legal_move = true"
+#       @canvas_object.draw_stone(point,"R")
+#       obj_out = {red: point}
+#       msg_out = JSON.stringify(obj_out)
+#       xhr = new XMLHttpRequest()
+#       url = "/legal-points"
+#       xhr.open('POST',url)
+#       xhr.onreadystatechange = ->
+#         if (xhr.readyState == 4 && xhr.status == 200)
+#           console.log ("ready state = #{xhr.readyState}")
+#           msg_in = xhr.responseText
+#           console.log ("msg_in = #{msg_in}")
+#           response = JSON.parse(msg_in)
+#           points = response.red
+#           update(points)
+#       xhr.send(msg_out)
+#     else
+#       console.log "click_handle: legal_move = false"
 
 
 
-class GameCanvas
+class CanvasHelper
 
   constructor: (board) ->
     @canvas = document.getElementById('go-board')
@@ -360,7 +357,31 @@ class BoardLines
   py = e.pageY
   x = px-dx
   y = py-dy
-  @zip.click(x,y)
+
+  # @canvas_object = canvas_object
+  # point = @canvas_object.get_point(x,y)
+  point = get_point(x,y)
+  console.log "ClickHandler#click_handle(x,y)"
+  console.log "  point = [#{point[0]},#{point[1]}]"
+  if legal_move(point)
+    console.log "click_handle: legal_move = true"
+    @canvas_object.draw_stone(point,"R")
+    obj_out = {red: point}
+    msg_out = JSON.stringify(obj_out)
+    xhr = new XMLHttpRequest()
+    url = "/legal-points"
+    xhr.open('POST',url)
+    xhr.onreadystatechange = ->
+      if (xhr.readyState == 4 && xhr.status == 200)
+        console.log ("ready state = #{xhr.readyState}")
+        msg_in = xhr.responseText
+        console.log ("msg_in = #{msg_in}")
+        response = JSON.parse(msg_in)
+        points = response.red
+        update(points)
+    xhr.send(msg_out)
+  else
+    console.log "click_handle: legal_move = false"
 
 
 update = (points) ->
