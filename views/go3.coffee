@@ -169,10 +169,10 @@ class LegalPlayablePoints
 
 class CanvasHelper
 
-  constructor: (board) ->
+  constructor: () ->
     @canvas = document.getElementById('go-board')
     @context = @canvas.getContext('2d')
-    @board = board
+    @board = new Board()
     @board_base = new BoardBase(this)
     @board_lines = new BoardLines(this)
 
@@ -391,7 +391,9 @@ update = (points) ->
 
 start = () ->
 
-  @zip = new Zipper()
+  # @board = new Board()
+  @canvas_helper = new CanvasHelper
+  # @zip = new Zipper()
 
 
 
