@@ -10,7 +10,6 @@
 class Zipper
 
   constructor: () ->
-    @board_specs = new BoardDimensions()
     @board = new Board(this)
     legal_points = new LegalPlayablePoints
     @clickster = new ClickHandler(@lpo,@board.drawing_object)
@@ -24,25 +23,14 @@ class Zipper
     @lpo.update_legal_moves(points)
 
 
-class BoardDimensions
-
-  constructor: () ->
-    @row_start = [1,1,1,1,1,1,2,3,4,5,6]
-    @row_end = [6,7,8,9,10,11,11,11,11,11,11]
-
-
 
 class Board
 
   constructor: (main_object) ->
     @controller = main_object
-    @get_board_constants()
-    @drawing_object = new GameCanvas(this)
 
-
-  get_board_constants: () ->
-    @row_start = @controller.board_specs.row_start
-    @row_end = @controller.board_specs.row_end
+    @row_start = [1,1,1,1,1,1,2,3,4,5,6]
+    @row_end = [6,7,8,9,10,11,11,11,11,11,11]
 
     @w_e = [ [[1,1], [6,1]],
             [[1,2], [7,2]],
@@ -79,6 +67,8 @@ class Board
               [[4,1], [11,8]],
               [[5,1], [11,7]],
               [[6,1], [11,6]] ]
+
+    @drawing_object = new GameCanvas(this)
 
 
 
@@ -379,7 +369,7 @@ update = (points) ->
 
 
 start = () ->
-  
+
   @zip = new Zipper()
 
 
