@@ -224,5 +224,3 @@ class BoardPointStoneTest < Test::Unit::TestCase
 
 
 end
-
-

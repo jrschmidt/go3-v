@@ -14,7 +14,7 @@ set :port, 4533
 
 
 get '/' do
-  puts "JRS:  server root ..... '/'"
+  # puts "JRS:  server root ..... '/'"
   erb :index
 end
 
@@ -33,9 +33,9 @@ end
 post '/legal-points' do
   @game = @game || Game.new
   msg_in = request.body.read
-  puts "JRS:  msg_in = #{msg_in}"
+  # puts "JRS:  msg_in = #{msg_in}"
   str = @game.handle_client_input(msg_in)
-  puts "JRS:  str = #{str}"
+  # puts "JRS:  str = #{str}"
   str
 end
 
@@ -69,7 +69,7 @@ class GameplayManager
   def initialize(game_object)
     @game = game_object
     @board = @game.board
-    @points = @board.points
+    @points_object = @board.points
     @analyzer = @game.analyzer
     @pt2str = PointStringBuilder.new
     @legal_moves = @game.legal_moves
@@ -111,7 +111,7 @@ class GameplayManager
 
 
   def make_a_move(player,point)
-    @points.set_point(point,player.color)
+    @points_object.set_point(point,player.color)
     remove_dead_stones_after_move(player)
   end
 
@@ -122,7 +122,7 @@ class GameplayManager
     opponents.each do |opp|
       dead_groups = @analyzer.dead_groups?(opp)
       dead_groups.each do |grp|
-        @points.set_points(:empty, grp)
+        @points_object.set_points(:empty, grp)
       end
     end
   end
@@ -173,10 +173,10 @@ class HumanPlayer < Player
   end
 
 
-  def get_console_move
-    str = gets
-    return string_to_point(str)
-  end
+  # def get_console_move
+  #   str = gets
+  #   return string_to_point(str)
+  # end
 
 
   def get_remote_move
@@ -327,6 +327,7 @@ class GameBoardPoints
 
   include Enumerable
 
+  # attr :point_values
 
   def initialize(board)
     @board = board
@@ -346,6 +347,12 @@ class GameBoardPoints
 
 
   def set_point(point,value)
+    # puts " "
+    # puts "JRS  set_point() called with"
+    # puts "     point: #{point[0]},#{point[1]}"
+    # puts "     value: #{value}"
+    # puts "     before: point_values.size = #{@point_values.size}"
+    # puts " "
     if value == :empty
       @point_values.delete_if {|pt| pt[:point] == point }
     else
@@ -356,6 +363,8 @@ class GameBoardPoints
         @point_values << {point: point, value: value}
       end
     end
+    # puts "     after:  point_values.size = #{@point_values.size}"
+    # puts " "
   end
 
 

@@ -152,7 +152,7 @@ class GameAnalysisTest < Test::Unit::TestCase
 
     white_exp.each do |xgrp|
       assert_not_nil white.find {|group| contain_same_objects(xgrp,group) }
-    end 
+    end
 
     blue_exp = [ [ [5, 3] ],
                  [ [3, 5], [3, 6] ],
@@ -188,7 +188,7 @@ class GameAnalysisTest < Test::Unit::TestCase
 
     red_exp.each do |xgrp|
       assert_not_nil red.find {|group| contain_same_objects(xgrp,group) }
-    end 
+    end
 
     white_exp = [ [ [3,4], [4,5], [5,5], [5,4], [6,4], [7,4], [8,4] ],
                   [ [1,6], [2,6], [2,5] ],
@@ -197,19 +197,19 @@ class GameAnalysisTest < Test::Unit::TestCase
 
     white_exp.each do |xgrp|
       assert_not_nil white.find {|group| contain_same_objects(xgrp,group) }
-    end 
+    end
 
     blue_exp = [ [ [1,1], [2,1] ],
-                 [ [4,1], [4,2] ], 
-                 [ [3,3], [4,4] ], 
-                 [ [6,3], [7,3], [8,3] ], 
-                 [ [1,4], [1,5] ], 
-                 [ [3,5], [3,6], [4,6] ], 
+                 [ [4,1], [4,2] ],
+                 [ [3,3], [4,4] ],
+                 [ [6,3], [7,3], [8,3] ],
+                 [ [1,4], [1,5] ],
+                 [ [3,5], [3,6], [4,6] ],
                  [ [6,6], [6,5], [7,5], [8,6] ] ]
 
     blue_exp.each do |xgrp|
       assert_not_nil blue.find {|group| contain_same_objects(xgrp,group) }
-    end 
+    end
 
   end
 
@@ -286,7 +286,7 @@ class GameAnalysisTest < Test::Unit::TestCase
                  points: [[3,7], [4,7], [5,7]] } ]
 
     red_exp.each do |xgrp|
-      # FIXME Can this be replaced with includes?, or something similar, called on the Hash object? 
+      # FIXME Can this be replaced with includes?, or something similar, called on the Hash object?
       assert_not_nil red.find {|group| contain_same_objects(xgrp[:eyes], group[:eyes]) }
       assert_not_nil red.find {|group| contain_same_objects(xgrp[:points], group[:points]) }
     end
@@ -332,7 +332,7 @@ class GameAnalysisTest < Test::Unit::TestCase
     blue_exp.each do |xgrp|
       assert_not_nil blue.find {|group| contain_same_objects(xgrp[:eyes], group[:eyes]) }
       assert_not_nil blue.find {|group| contain_same_objects(xgrp[:points], group[:points]) }
-    end 
+    end
 
   end
 
@@ -483,5 +483,3 @@ class GameAnalysisTest < Test::Unit::TestCase
 
 
 end
-
-
