@@ -321,6 +321,7 @@ class BoardLines
         msg_in = xhr.responseText
         console.log ("msg_in = #{msg_in}")
         response = JSON.parse(msg_in)
+        add_stones(response)
         points = response.red
         update(points)
     xhr.send(msg_out)
@@ -353,6 +354,13 @@ get_init_legal_moves = () ->
       pp[1] = i+1
       points.push(pp)
   return points
+
+
+add_stones = (response) ->
+  ww = response["white"]
+  bb = response["blue"]
+  @canvas_helper.draw_stone(ww, "W")
+  @canvas_helper.draw_stone(bb, "B")
 
 
 update = (points) ->
