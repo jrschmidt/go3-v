@@ -71,7 +71,6 @@ class GameplayManager
     @board = @game.board
     @points_object = @board.points
     @analyzer = @game.analyzer
-    @pt2str = PointStringBuilder.new
     @legal_moves = @game.legal_moves
 
     @players = {}
@@ -322,7 +321,7 @@ end
 
 
 
-class GameBoardPoints
+class GameBoardPointSet
   # A collection of values for each point on the game board
 
   include Enumerable
@@ -379,6 +378,45 @@ class GameBoardPoints
     return nbv
   end
 
+
+end
+
+
+
+class GameBoardPoints < GameBoardPointSet
+
+  def initialize(board)
+    super(board)
+    @persist = GamePersist.new
+  end
+
+  def set_point(point,value)
+    super(point, value)
+  end
+
+end
+
+
+
+class GamePersist
+
+  def initialize
+    @filename = "game.json"
+    @gdata = {stones: [] }
+    save_data (@gdata)
+  end
+
+
+  def read_data
+    return File.read(@filename)
+  end
+
+
+  def save_data(data)
+    File.open(@filename, "w") do |f|
+      f.puts data
+    end
+  end
 
 end
 
@@ -453,7 +491,7 @@ class GroupAnalyzer
     @board = @game.board
     @points = @board.points
 
-    @group_points = GameBoardPoints.new(@board)
+    @group_points = GameBoardPointSet.new(@board)
   end
 
 
@@ -606,44 +644,3 @@ class GroupAnalyzer
   end
 
 end
-
-
-
-class PointStringBuilder
-    # A class that encodes a set of points into a string
-
-  HEX_D = {10 => "a",
-           11 => "b",
-           12 => "c",
-           13 => "d",
-           14 => "e",
-           15 => "f" }
-
-  def points_to_string(points)
-    str = points.map {|pt| point_to_string(pt)}.join
-    return str
-  end
-
-
-  def point_to_string(point)
-    str = hex_digit(point[0]) + hex_digit(point[1])
-    return str
-  end
-
-
-  def hex_digit(n)
-    dd = n<10 ? n.to_s : HEX_D[n] if n >= 0 && n < 16
-    dd = " " if n<0 || n>15
-    return dd
-  end
-
-end
-
-
-
-# def go_string
-#   puts "JRS:  go_string METHOD CALLED"
-#   @game = @game || Game.new
-#   str = @game.legal_moves_to_string
-#   return str
-# end
