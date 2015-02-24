@@ -24,12 +24,6 @@ get '/javascripts/go3.js' do
 end
 
 
-# get '/legal-points' do
-#   str = @game.legal_moves_to_string
-#   str
-# end
-
-
 post '/legal-points' do
   @game = @game || Game.new
   msg_in = request.body.read
@@ -40,9 +34,10 @@ post '/legal-points' do
 end
 
 
+
 class Game
 
-  attr :board, :analyzer, :legal_moves, :manager
+  attr_accessor :board, :analyzer, :legal_moves, :manager
 
 
   def initialize
@@ -110,6 +105,11 @@ class GameplayManager
 
 
   def make_a_move(player,point)
+    puts " "
+    puts "GamePlayManager#make_a_move"
+    puts "   player = #{player.color}"
+    puts "   point = #{point[0]}, #{point[1]}"
+    puts
     @points_object.set_point(point,player.color)
     remove_dead_stones_after_move(player)
   end
@@ -150,7 +150,7 @@ end
 
 class Player
 
-  attr :color
+  attr_accessor :color
 
   def initialize(game,color)
     @game = game
@@ -163,7 +163,7 @@ end
 
 class HumanPlayer < Player
 
-  attr :client_move
+  attr_accessor :client_move
 
   # TODO set_client_move method to change @client_move after receiving remote input
 
@@ -211,7 +211,7 @@ class Board
 
   include Enumerable
 
-  attr :points
+  attr_accessor :points
 
   ROW_START = [nil,1,1,1,1,1,1,2,3,4,5,6]
   ROW_END = [nil,6,7,8,9,10,11,11,11,11,11,11]
@@ -322,11 +322,11 @@ end
 
 
 class GameBoardPointSet
-  # A collection of values for each point on the game board
+  # A general purpose collection of values for each point on the game board.
 
   include Enumerable
 
-  # attr :point_values
+  attr_accessor :point_values, :bid
 
   def initialize(board)
     @board = board
@@ -346,12 +346,11 @@ class GameBoardPointSet
 
 
   def set_point(point,value)
-    # puts " "
-    # puts "JRS  set_point() called with"
-    # puts "     point: #{point[0]},#{point[1]}"
-    # puts "     value: #{value}"
-    # puts "     before: point_values.size = #{@point_values.size}"
-    # puts " "
+    puts " "
+    puts "GameBoardPointSet.set_point()"
+    puts "   point: #{point[0]},#{point[1]}"
+    puts "   value: #{value}"
+    puts "   before: point_values.size = #{@point_values.size}"
     if value == :empty
       @point_values.delete_if {|pt| pt[:point] == point }
     else
@@ -362,8 +361,7 @@ class GameBoardPointSet
         @point_values << {point: point, value: value}
       end
     end
-    # puts "     after:  point_values.size = #{@point_values.size}"
-    # puts " "
+    puts "  after (GameBoardPointSet):  point_values.size = #{@point_values.size}"
   end
 
 
@@ -384,15 +382,41 @@ end
 
 
 class GameBoardPoints < GameBoardPointSet
+  # An extension of GameBoardPointSet to hold the values of the stones played
+  # on the gameboard points.
 
   def initialize(board)
     super(board)
+    @bid = "gameboard"
     @persist = GamePersist.new
   end
 
   def set_point(point,value)
+        puts " "
+        puts "GameBoardPoints.set_point()"
+        puts "   point: #{point[0]},#{point[1]}"
+        puts "   value: #{value}"
+        puts "   before: point_values.size = #{@point_values.size}"
+
     super(point, value)
+    puts "  after (GameBoardPoints):  point_values.size = #{@point_values.size}"
+    @persist.save_data(@point_values)
   end
+
+
+  def get_point(point)
+    @point_values = @persist.read_data
+    # str = @persist.read_data
+    # points = JSON.parse(str)
+    # @point_values = points.stones
+    super(point)
+  end
+
+
+  def reload
+    return @persist.read_data
+  end
+
 
 end
 
@@ -408,13 +432,17 @@ class GamePersist
 
 
   def read_data
-    return File.read(@filename)
+    str = File.read(@filename)
+    jsn = JSON.parse(str)
+    points_array = jsn["stones"]
+    return points_array
   end
 
 
   def save_data(data)
     File.open(@filename, "w") do |f|
-      f.puts data
+      pts = {stones: data}
+      f.puts pts.to_json
     end
   end
 
@@ -435,6 +463,7 @@ class LegalMovesFinder
 
 
   def find_legal_moves(player_color)
+    @points.reload
     not_legal = []
 
     groups = @analyzer.find_all_groups
@@ -484,7 +513,7 @@ end
 class GroupAnalyzer
     # Provides analysis of groups of stones
 
-  attr :group_points
+  attr_accessor :group_points
 
   def initialize(game_object)
     @game = game_object
@@ -492,6 +521,7 @@ class GroupAnalyzer
     @points = @board.points
 
     @group_points = GameBoardPointSet.new(@board)
+    @group_points.bid = "groups"
   end
 
 
