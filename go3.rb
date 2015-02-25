@@ -42,11 +42,27 @@ end
 
 class Responder
 
+  def initialize
+    @move = MoveProcessor.new
+  end
+
   def respond_to_move(move_data)
+    @move.make_move move_data
     return '{"resp": "**TEMP RESPONSE**"}'
   end
 
 end
+
+
+class MoveProcessor
+
+  def make_move move_data
+    puts "MoveProcessor#move_data"
+    puts "   move_data = #{move_data.to_s}"
+  end
+
+end
+
 
 # class Game
 #
