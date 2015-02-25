@@ -310,7 +310,7 @@ class BoardLines
   if legal_move(point)
     console.log "click_handle: legal_move = true"
     @canvas_helper.draw_stone(point,"R")
-    obj_out = {red: point}
+    obj_out = {red: point, new: @newgame}
     msg_out = JSON.stringify(obj_out)
     xhr = new XMLHttpRequest()
     url = "/legal-points"
@@ -325,10 +325,12 @@ class BoardLines
         points = response.red
         update(points)
     xhr.send(msg_out)
+    @newgame = "no"
   else
     console.log "click_handle: legal_move = false"
 
 
+# TODO This can be shortened to a one line method.
 legal_move = (point) ->
   console.log "legal_move() [GLOBAL]"
   console.log "  point = #{point[0]}, #{point[1]}"
@@ -371,6 +373,7 @@ update = (points) ->
 
 
 start = () ->
+  @newgame = "yes"
   @canvas_helper = new CanvasHelper
   @points = get_init_legal_moves()
 
