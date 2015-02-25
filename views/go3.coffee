@@ -313,7 +313,7 @@ class BoardLines
     obj_out = {red: point, new: @newgame}
     msg_out = JSON.stringify(obj_out)
     xhr = new XMLHttpRequest()
-    url = "/legal-points"
+    url = "/make-a-move"
     xhr.open('POST',url)
     xhr.onreadystatechange = ->
       if (xhr.readyState == 4 && xhr.status == 200)
