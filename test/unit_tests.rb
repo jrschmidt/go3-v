@@ -11,13 +11,13 @@ require './test/test_data.rb'
 require './test/board_point_stone_test.rb'
 
 # Tests for Game Analysis Methods
-require './test/game_analysis_test.rb'
+# require './test/game_analysis_test.rb'
 
 # Tests for Legal Moves Methods
-require './test/legal_moves_test.rb'
+# require './test/legal_moves_test.rb'
 
 # Tests for Gameplay Control Methods
-require './test/gameplay_control_test.rb'
+# require './test/gameplay_control_test.rb'
 
 
 class Go3Test < Test::Unit::TestCase

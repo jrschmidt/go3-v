@@ -56,12 +56,43 @@ end
 
 class MoveProcessor
 
+  attr_accessor :stones
+
   def make_move move_data
     puts "MoveProcessor#move_data"
     puts "   move_data = #{move_data.to_s}"
+    newgame = move_data["new"]
+    puts "   newgame = #{newgame}"
+    @stones = Stones.new newgame
   end
 
 end
+
+
+class Stones
+
+  def initialize(newgame)
+
+  end
+
+end
+
+
+
+#     make_a_move(@human_player, point)
+#     response = {}
+#     @ai_players.each do |player|
+#       color = player.color
+#       point = get_next_move(color)
+#       make_a_move(player,point)
+#       response[color] = point
+#     end
+#     legal = @legal_moves.find_legal_moves(:red)
+#     response[:red] = legal
+#     str = response.to_json
+#     return str
+
+
 
 
 # class Game
