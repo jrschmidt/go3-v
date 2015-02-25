@@ -14,7 +14,6 @@ set :port, 4533
 
 
 get '/' do
-  # puts "JRS:  server root ..... '/'"
   erb :index
 end
 
@@ -27,9 +26,7 @@ end
 post '/legal-points' do
   @game = @game || Game.new
   msg_in = request.body.read
-  # puts "JRS:  msg_in = #{msg_in}"
   str = @game.handle_client_input(msg_in)
-  # puts "JRS:  str = #{str}"
   str
 end
 
@@ -105,11 +102,13 @@ class GameplayManager
 
 
   def make_a_move(player,point)
-    puts " "
-    puts "GamePlayManager#make_a_move"
-    puts "   player = #{player.color}"
-    puts "   point = #{point[0]}, #{point[1]}"
-    puts
+    # puts " "
+    # puts "GamePlayManager#make_a_move"
+    # puts "   player = #{player.color}"
+    # puts "   point = #{point[0]}, #{point[1]}"
+    # puts
+    puts "make_a_move()"
+    puts "   points_object.size = #{@points_object.point_values.size}"
     @points_object.set_point(point,player.color)
     remove_dead_stones_after_move(player)
   end
@@ -120,6 +119,7 @@ class GameplayManager
     opponents.delete(player)
     opponents.each do |opp|
       dead_groups = @analyzer.dead_groups?(opp)
+      puts "dead groups = #{dead_groups.size}"
       dead_groups.each do |grp|
         @points_object.set_points(:empty, grp)
       end
@@ -324,8 +324,6 @@ end
 class GameBoardPointSet
   # A general purpose collection of values for each point on the game board.
 
-  include Enumerable
-
   attr_accessor :point_values, :bid
 
   def initialize(board)
@@ -346,11 +344,11 @@ class GameBoardPointSet
 
 
   def set_point(point,value)
-    puts " "
-    puts "GameBoardPointSet.set_point()"
-    puts "   point: #{point[0]},#{point[1]}"
-    puts "   value: #{value}"
-    puts "   before: point_values.size = #{@point_values.size}"
+    # puts " "
+    # puts "GameBoardPointSet.set_point()"
+    # puts "   point: #{point[0]},#{point[1]}"
+    # puts "   value: #{value}"
+    # puts "   before: point_values.size = #{@point_values.size}"
     if value == :empty
       @point_values.delete_if {|pt| pt[:point] == point }
     else
@@ -361,7 +359,7 @@ class GameBoardPointSet
         @point_values << {point: point, value: value}
       end
     end
-    puts "  after (GameBoardPointSet):  point_values.size = #{@point_values.size}"
+    # puts "  after (GameBoardPointSet):  point_values.size = #{@point_values.size}"
   end
 
 
@@ -391,30 +389,31 @@ class GameBoardPoints < GameBoardPointSet
     @persist = GamePersist.new
   end
 
-  def set_point(point,value)
-        puts " "
-        puts "GameBoardPoints.set_point()"
-        puts "   point: #{point[0]},#{point[1]}"
-        puts "   value: #{value}"
-        puts "   before: point_values.size = #{@point_values.size}"
 
+  def set_point(point,value)
+    puts " "
+    puts "GameBoardPoints.set_point()"
+    puts "   point: #{point[0]},#{point[1]}"
+    puts "   value: #{value}"
+    puts "   before reload: point_values.size = #{@point_values.size}"
+    @reload
+    puts "  after reload:  point_values.size = #{@point_values.size}"
     super(point, value)
-    puts "  after (GameBoardPoints):  point_values.size = #{@point_values.size}"
+    puts "  after super():  point_values.size = #{@point_values.size}"
     @persist.save_data(@point_values)
   end
 
 
   def get_point(point)
-    @point_values = @persist.read_data
-    # str = @persist.read_data
-    # points = JSON.parse(str)
-    # @point_values = points.stones
+    @reload
     super(point)
   end
 
 
   def reload
-    return @persist.read_data
+    puts "CALL reload()"
+    @point_values = @persist.read_data
+    puts "END reload()"
   end
 
 
@@ -426,20 +425,27 @@ class GamePersist
 
   def initialize
     @filename = "game.json"
-    @gdata = {stones: [] }
-    save_data (@gdata)
+    save_data ( [] )
   end
 
 
   def read_data
+    puts " "
+    puts "GamePersist#read_data()"
     str = File.read(@filename)
+    puts "   str = #{str}"
     jsn = JSON.parse(str)
+    puts "   jsn = #{jsn}"
     points_array = jsn["stones"]
+    puts "   points_array ="
+    points_array.each {|pt| puts "     #{pt}" }
+    # points_array.each {|pt| puts "     #{pt[0]}, #{pt[1]}" }
     return points_array
   end
 
 
   def save_data(data)
+    puts "CALL save_data  data.size = #{data.size}"
     File.open(@filename, "w") do |f|
       pts = {stones: data}
       f.puts pts.to_json
@@ -463,7 +469,11 @@ class LegalMovesFinder
 
 
   def find_legal_moves(player_color)
+    puts " "
+    puts "find_legal_moves()"
+    puts "   before reload: points.size = #{@points.point_values.size}"
     @points.reload
+    puts "   after reload: points.size = #{@points.point_values.size}"
     not_legal = []
 
     groups = @analyzer.find_all_groups
@@ -667,7 +677,7 @@ class GroupAnalyzer
   def find_group_airpoints(group)
     air = []
     for stone in group
-      air << @board.all_adjacent_points(stone).select {|pt| @board.points.get_point(pt) == :empty}
+      air << @board.all_adjacent_points(stone).find_all {|pt| @board.points.get_point(pt) == :empty}
     end
     air.flatten!(1).uniq!
     return air
