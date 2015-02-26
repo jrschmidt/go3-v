@@ -97,15 +97,15 @@ class GamePersist
 
 
   def read_data
-    # puts " "
-    # puts "GamePersist#read_data()"
+    puts " "
+    puts "GamePersist#read_data()"
     str = File.read(@filename)
-    # puts "   str = #{str}"
+    puts "   str = #{str}"
     jsn = JSON.parse(str)
-    # puts "   jsn = #{jsn}"
+    puts "   jsn = #{jsn}"
     points_array = jsn["stones"]
-    # puts "   points_array ="
-    # points_array.each {|pt| puts "     #{pt[0]}, #{pt[1]}" }
+    puts "   points_array ="
+    points_array.each {|pt| puts "     #{pt[0]}, #{pt[1]}" }
     return points_array
   end
 
