@@ -28,22 +28,9 @@ post '/make-a-move' do
   msg_in = request.body.read
   puts "   data = #{msg_in}"
   move_data = JSON.parse msg_in
-  @responder = @responder || Responder.new
-  str = @responder.respond_to_move move_data
+  @move_processor = MoveProcessor.new
+  str = @move_processor.process_move move_data
   return str
-end
-
-
-class Responder
-
-  def initialize
-    @move = MoveProcessor.new
-  end
-
-  def respond_to_move(move_data)
-    return @move.process_move move_data
-  end
-
 end
 
 
@@ -54,7 +41,7 @@ class MoveProcessor
     @ai_players = AIPlayers.new(@legal_moves)
   end
 
-  def process_move move_data
+  def process_move(move_data)
     puts "MoveProcessor#process_move"
     puts "   move_data = #{move_data.to_s}"
     puts "   newgame = #{move_data["new"]}"
