@@ -26,7 +26,7 @@ end
 post '/make-a-move' do
   puts "POST '/make-a-move'"
   msg_in = request.body.read
-  puts "    data = #{msg_in}"
+  puts "   data = #{msg_in}"
   move_data = JSON.parse msg_in
   @responder = @responder || Responder.new
   str = @responder.respond_to_move move_data
@@ -47,7 +47,7 @@ class Responder
   end
 
   def respond_to_move(move_data)
-    @move.make_move move_data
+    @move.process_move move_data
     return '{"resp": "**TEMP RESPONSE**"}'
   end
 
@@ -58,12 +58,23 @@ class MoveProcessor
 
   attr_accessor :stones
 
-  def make_move move_data
-    puts "MoveProcessor#move_data"
+  def initialize
+    @ai_players = AIPlayers.new
+  end
+
+  def process_move move_data
+    puts "MoveProcessor#process_move"
     puts "   move_data = #{move_data.to_s}"
     newgame = move_data["new"]
     puts "   newgame = #{newgame}"
     @stones = Stones.new newgame
+    point = move_data["red"]
+    @stones.place_stone :red, point
+    white_move = @ai_players.get_move :white
+    @stones.place_stone :white, white_move
+    blue_move = @ai_players.get_move :blue
+    @stones.place_stone :blue, blue_move
+    # legal_red_moves = @legal_moves.get_legal_moves :red
   end
 
 end
@@ -72,7 +83,65 @@ end
 class Stones
 
   def initialize(newgame)
+    @persist = GamePersist.new
+    if newgame == "yes"
+      @values = []
+    else
+      @values = @persist.read_data
+    end
+  end
 
+
+  def place_stone(color, point)
+    puts "Stones#place_stone"
+    puts "   color = #{color}"
+    puts "   point = #{point[0]}, #{point[1]}"
+  end
+
+end
+
+
+class GamePersist
+
+  def initialize
+    @filename = "game.json"
+  end
+
+
+  def read_data
+    # puts " "
+    # puts "GamePersist#read_data()"
+    str = File.read(@filename)
+    # puts "   str = #{str}"
+    jsn = JSON.parse(str)
+    # puts "   jsn = #{jsn}"
+    points_array = jsn["stones"]
+    # puts "   points_array ="
+    # points_array.each {|pt| puts "     #{pt[0]}, #{pt[1]}" }
+    return points_array
+  end
+
+
+  def save_data(data)
+    # puts "CALL save_data  data.size = #{data.size}"
+    File.open(@filename, "w") do |f|
+      pts = {stones: data}
+      f.puts pts.to_json
+    end
+  end
+
+end
+
+
+class AIPlayers
+
+  def get_move(color)
+    puts "AIPlayers#get_move"
+    puts "   color = #{color}"
+    point = [3,3] if color == :white
+    point = [5,5] if color == :blue
+    puts "   point = #{point[0]}, #{point[1]}"
+    return point
   end
 
 end
