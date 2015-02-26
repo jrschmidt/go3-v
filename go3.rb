@@ -56,10 +56,9 @@ end
 
 class MoveProcessor
 
-  attr_accessor :stones
-
   def initialize
-    @ai_players = AIPlayers.new
+    @legal_moves = LegalMovesFinder.new
+    @ai_players = AIPlayers.new(@legal_moves)
   end
 
   def process_move move_data
@@ -74,6 +73,7 @@ class MoveProcessor
     @stones.place_stone :white, white_move
     blue_move = @ai_players.get_move :blue
     @stones.place_stone :blue, blue_move
+    legal_red_moves = [ [1,1], [2,2], [3,3], [4,4], [5,5], [6,6], [7,7], [8,8], [9,9], [10,10], [11,11] ]
     # legal_red_moves = @legal_moves.get_legal_moves :red
   end
 
@@ -135,6 +135,10 @@ end
 
 class AIPlayers
 
+  def initialize(legal_moves)
+    @legal_moves = legal_moves
+  end
+
   def get_move(color)
     puts "AIPlayers#get_move"
     puts "   color = #{color}"
@@ -145,6 +149,72 @@ class AIPlayers
   end
 
 end
+
+
+class LegalMovesFinder
+  # A class to find the set of all legal moves for a player
+
+end
+
+
+#   def initialize(game_object)
+#     @game = game_object
+#     @board = @game.board
+#     @points = @board.points
+#     @analyzer = @game.analyzer
+#     @group_points = @analyzer.group_points
+#   end
+#
+#
+#   def find_legal_moves(player_color)
+#     # puts " "
+#     # puts "find_legal_moves()"
+#     # puts "   before reload: points.size = #{@points.point_values.size}"
+#     @points.reload
+#     # puts "   after reload: points.size = #{@points.point_values.size}"
+#     not_legal = []
+#
+#     groups = @analyzer.find_all_groups
+#     eyes = @analyzer.find_empty_points_for_groups(groups)
+#
+#     one_eye_groups = []
+#
+#     g1 = eyes.find_all {|gp| gp[:color] == player_color && gp[:eyes].size == 1 }
+#     g1.each do |gp|
+#       nbrs = @board.all_adjacent_points(gp[:eyes][0])
+#       one_eye_groups << gp unless nbrs.find {|pt| @points.get_point(pt) == :empty }
+#     end
+#
+#     one_eye_groups.each do |gp|
+#       point = gp[:eyes][0]
+#       g_share = eyes.find_all {|gpx| gpx[:eyes].include?(point) }
+#       if g_share.find {|gpz| gpz[:color] == player_color && gpz[:eyes].size > 1 }
+#         legal = true
+#       elsif g_share.find {|gpz| gpz[:color] != player_color && gpz[:eyes].size == 1 }
+#         legal = true
+#       else
+#         legal = false
+#       end
+#       not_legal << point if legal == false
+#     end
+#
+#     single_eyes = @analyzer.find_one_eye_points
+#     other_color_one_eyes = []
+#     single_eyes.each do |eye|
+#       other_color_one_eyes << eye if @points.neighbors_with_value(eye,player_color) == []
+#     end
+#
+#     other_color_one_eyes.each do |eye|
+#       nbr_grps = @analyzer.find_other_color_neighbor_groups(eye,player_color)
+#       not_legal << eye unless nbr_grps.find {|grp| @analyzer.find_group_airpoints(grp[:stones]).size == 1 }
+#     end
+#
+#     moves = @board.find_all {|point| @points.get_point(point) == :empty} - not_legal
+#
+#     return moves
+#   end
+
+
 
 
 
