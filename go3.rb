@@ -266,6 +266,51 @@ class BoardSpecs
 end
 
 
+class PointSet
+  # A general purpose collection of values for each point on the game board.
+
+  attr_accessor :point_values, :bid
+
+  def initialize(game)
+    @point_values = []
+  end
+
+  def get_point(point)
+    result = @point_values.find {|pt| pt[:point] == point }
+    if result == nil
+      val = :empty
+    else
+      val = result[:value]
+    end
+    return val
+  end
+
+  def set_point(point,value)
+    # puts " "
+    # puts "GameBoardPointSet.set_point()"
+    # puts "   point: #{point[0]},#{point[1]}"
+    # puts "   value: #{value}"
+    # puts "   before: point_values.size = #{@point_values.size}"
+    if value == :empty
+      @point_values.delete_if {|pt| pt[:point] == point }
+    else
+      zz = @point_values.find {|pt| pt[:point] == point }
+      if zz != nil
+        zz[:value] = value
+      else
+        @point_values << {point: point, value: value}
+      end
+    end
+    # puts "  after (GameBoardPointSet):  point_values.size = #{@point_values.size}"
+  end
+
+  def set_points(value, points_array)
+    points_array.each {|pt| set_point(pt,value)}
+  end
+
+end
+
+
 
 
 #     def find_legal_moves(player_color)
@@ -485,126 +530,6 @@ end
 #     open = @legal_moves.find_legal_moves(@color)
 #     move = open.sample
 #     return move
-#   end
-#
-#
-# end
-#
-#
-#
-# class Board
-#     # This class models the layout of the gameboard.
-#     # (The positions of stones on the board are represented by an instance of
-#     # the GameBoardPoints class.)
-#
-#   include Enumerable
-#
-#   attr_accessor :points, :game
-#
-#   ROW_START = [nil,1,1,1,1,1,1,2,3,4,5,6]
-#   ROW_END = [nil,6,7,8,9,10,11,11,11,11,11,11]
-#   MIN = 1
-#   MAX = 11
-#
-#   def initialize(game)
-#     # puts "INITIALIZE Board"
-#     @game = game
-#     # puts "      newgame = #{@game.newgame}"
-#     @points = GameBoardPoints.new(@game)
-#   end
-#
-#
-#   def each
-#     1.upto(MAX) do |i|
-#       ROW_START[i].upto(ROW_END[i]) do |j|
-#         pt = [i,j]
-#         yield pt
-#       end
-#     end
-#   end
-#
-#
-#   def valid_point?(point)
-#     valid = false
-#
-#     if point.class == Array && point.size == 2 && point.count {|p| p.class == Fixnum} == 2
-#       a = point[0]
-#       b = point[1]
-#       if a>=MIN && a<= MAX
-#         valid = true if b >= ROW_START[a] && b <= ROW_END[a]
-#       end
-#     end
-#
-#     return valid
-#   end
-#
-#
-#   def string_to_point(string)
-#     point = []
-#     if string.size == 2
-#       string.each_char do |ch|
-#         if ["1","2","3","4","5","6","7","8","9","a","b"].include?(ch)
-#           point << ch.to_i(16)
-#         end
-#       end
-#     end
-#     return point
-#   end
-#
-#
-#   def adjacent?(pt1,pt2)
-#     adj = true
-#     adj = false if pt1.class != Array || pt2.class != Array
-#     adj = false if pt1.size != 2 || pt2.size != 2
-#     adj = false if [pt1,pt2].flatten.count {|z| z.class == Fixnum} != 4
-#     adj = false if valid_point?(pt1) == false || valid_point?(pt2) == false
-#
-#     if adj == true
-#       a1 = pt1[0]
-#       b1 = pt1[1]
-#       a2 = pt2[0]
-#       b2 = pt2[1]
-#       adj = false if (a1-a2).abs > 1 || (b1-b2).abs > 1
-#       adj = false if (a1 == a2) && (b1 == b2)
-#       adj = false if (a1 == a2+1) && (b1 == b2-1)
-#       adj = false if (a1 == a2-1) && (b1 == b2+1)
-#     end
-#
-#     return adj
-#   end
-#
-#   def all_adjacent_points(p)
-#     # Returns an array containing the set of adjacent valid points in
-#     # clockwise order as follows: :right_up, :right, :right_dn, :left_dn,
-#     # :left, :left_up
-#
-#     filter = [ [0,-1], [1,0], [1,1], [0,1], [-1,0], [-1,-1] ]
-#     return get_adjacent_points(p,filter)
-#   end
-#
-#
-#   def all_previous_adjacent_points(p)
-#     # Returns an array containing the set of adjacent valid points which
-#     # are returned before the point p by the each method, in this order:
-#     # :left_up, :right_up, :left
-#
-#     filter = [ [-1,-1], [0,-1], [-1,0] ]
-#     return get_adjacent_points(p,filter)
-#   end
-#
-#
-#   def get_adjacent_points(p,filter)
-#
-#     points = []
-#     if valid_point?(p)
-#       a = p[0]
-#       b = p[1]
-#       for delta in filter
-#         z = [ (a + delta[0]), (b + delta[1]) ]
-#         points << z if valid_point?(z)
-#       end
-#     end
-#     return points
 #   end
 #
 #
