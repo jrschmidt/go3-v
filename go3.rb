@@ -33,12 +33,6 @@ post '/make-a-move' do
   return str
 end
 
-# post '/legal-points' do
-#   @game = @game || Game.new
-#   msg_in = request.body.read
-#   str = @game.handle_client_input(msg_in)
-#   str
-# end
 
 class Responder
 
@@ -47,8 +41,7 @@ class Responder
   end
 
   def respond_to_move(move_data)
-    @move.process_move move_data
-    return '{"resp": "**TEMP RESPONSE**"}'
+    return @move.process_move move_data
   end
 
 end
@@ -64,17 +57,25 @@ class MoveProcessor
   def process_move move_data
     puts "MoveProcessor#process_move"
     puts "   move_data = #{move_data.to_s}"
-    newgame = move_data["new"]
-    puts "   newgame = #{newgame}"
-    @stones = Stones.new newgame
-    point = move_data["red"]
-    @stones.place_stone :red, point
+    puts "   newgame = #{move_data["new"]}"
+    @stones = Stones.new move_data["new"]
+    red_move = move_data["red"]
+    @stones.place_stone :red, red_move
     white_move = @ai_players.get_move :white
     @stones.place_stone :white, white_move
     blue_move = @ai_players.get_move :blue
     @stones.place_stone :blue, blue_move
     legal_red_moves = [ [1,1], [2,2], [3,3], [4,4], [5,5], [6,6], [7,7], [8,8], [9,9], [10,10], [11,11] ]
     # legal_red_moves = @legal_moves.get_legal_moves :red
+    return build_response white_move, blue_move, legal_red_moves
+  end
+
+  def build_response(white, blue, legal_red)
+    response = {
+      white: white,
+      blue: blue,
+      red: legal_red }
+    return response.to_json
   end
 
 end
