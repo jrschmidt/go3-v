@@ -52,8 +52,8 @@ class MoveProcessor
     @stones.place_stone :white, white_move
     blue_move = @ai_players.get_move :blue
     @stones.place_stone :blue, blue_move
-    legal_red_moves = [ [1,1], [2,2], [3,3], [4,4], [5,5], [6,6], [7,7], [8,8], [9,9], [10,10], [11,11] ]
-    # legal_red_moves = @legal_moves.get_legal_moves :red
+    # legal_red_moves = [ [1,1], [2,2], [3,3], [4,4], [5,5], [6,6], [7,7], [8,8], [9,9], [10,10], [11,11] ]
+    legal_red_moves = @legal_moves.get_legal_moves :red
     return build_response white_move, blue_move, legal_red_moves
   end
 
@@ -142,6 +142,10 @@ end
 class LegalMovesFinder
   # A class to find the set of all legal moves for a player
 
+  def get_legal_moves(player_color)
+    return [ [5,10], [6,10], [7,10], [8,10], [9,10], [10,10], [11,10]]
+  end
+
 end
 
 
@@ -152,9 +156,11 @@ end
 #     @analyzer = @game.analyzer
 #     @group_points = @analyzer.group_points
 #   end
-#
-#
-#   def find_legal_moves(player_color)
+
+
+
+
+    # def find_legal_moves(player_color)
 #     # puts " "
 #     # puts "find_legal_moves()"
 #     # puts "   before reload: points.size = #{@points.point_values.size}"
@@ -201,24 +207,6 @@ end
 #
 #     return moves
 #   end
-
-
-
-
-
-#     make_a_move(@human_player, point)
-#     response = {}
-#     @ai_players.each do |player|
-#       color = player.color
-#       point = get_next_move(color)
-#       make_a_move(player,point)
-#       response[color] = point
-#     end
-#     legal = @legal_moves.find_legal_moves(:red)
-#     response[:red] = legal
-#     str = response.to_json
-#     return str
-
 
 
 
