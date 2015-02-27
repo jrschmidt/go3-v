@@ -12,16 +12,13 @@ set :server, %w[webrick thin mongrel]
 
 set :port, 4533
 
-
 get '/' do
   erb :index
 end
 
-
 get '/javascripts/go3.js' do
   coffee :go3
 end
-
 
 post '/make-a-move' do
   puts "POST '/make-a-move'"
@@ -36,16 +33,18 @@ end
 
 class MoveProcessor
 
-  def initialize
-    @legal_moves = LegalMovesFinder.new
-    @ai_players = AIPlayers.new(@legal_moves)
-  end
+  # def initialize
+  #   @legal_moves = LegalMovesFinder.new
+  #   @ai_players = AIPlayers.new(@legal_moves)
+  # end
 
   def process_move(move_data)
     puts "MoveProcessor#process_move"
     puts "   move_data = #{move_data.to_s}"
     puts "   newgame = #{move_data["new"]}"
     @stones = Stones.new move_data["new"]
+    @legal_moves = LegalMovesFinder.new(@stones)
+    @ai_players = AIPlayers.new(@legal_moves)
     red_move = move_data["red"]
     @stones.place_stone :red, red_move
     white_move = @ai_players.get_move :white
@@ -53,7 +52,7 @@ class MoveProcessor
     blue_move = @ai_players.get_move :blue
     @stones.place_stone :blue, blue_move
     # legal_red_moves = [ [1,1], [2,2], [3,3], [4,4], [5,5], [6,6], [7,7], [8,8], [9,9], [10,10], [11,11] ]
-    legal_red_moves = @legal_moves.get_legal_moves :red
+    legal_red_moves = @legal_moves.find_legal_moves :red
     return build_response white_move, blue_move, legal_red_moves
   end
 
@@ -68,7 +67,50 @@ class MoveProcessor
 end
 
 
-class Stones
+class PointSet
+  # A general purpose collection of values for each point on the game board.
+
+  def initialize
+    @values = []
+  end
+
+  def get_point(point)
+    result = @values.find {|pt| pt[:point] == point }
+    if result == nil
+      val = :empty
+    else
+      val = result[:value]
+    end
+    return val
+  end
+
+  def set_point(point,value)
+    # puts " "
+    # puts "GameBoardPointSet.set_point()"
+    # puts "   point: #{point[0]},#{point[1]}"
+    # puts "   value: #{value}"
+    # puts "   before: point_values.size = #{@values.size}"
+    if value == :empty
+      @values.delete_if {|pt| pt[:point] == point }
+    else
+      zz = @values.find {|pt| pt[:point] == point }
+      if zz != nil
+        zz[:value] = value
+      else
+        @values << {point: point, value: value}
+      end
+    end
+    # puts "  after (GameBoardPointSet):  point_values.size = #{@values.size}"
+  end
+
+  def set_points(value, points_array)
+    points_array.each {|pt| set_point(pt,value)}
+  end
+
+end
+
+
+class Stones < PointSet
 
   def initialize(newgame)
     @persist = GamePersist.new
@@ -78,7 +120,6 @@ class Stones
       @values = @persist.read_data
     end
   end
-
 
   def place_stone(color, point)
     puts "Stones#place_stone"
@@ -95,7 +136,6 @@ class GamePersist
     @filename = "game.json"
   end
 
-
   def read_data
     puts " "
     puts "GamePersist#read_data()"
@@ -108,7 +148,6 @@ class GamePersist
     points_array.each {|pt| puts "     #{pt[0]}, #{pt[1]}" }
     return points_array
   end
-
 
   def save_data(data)
     # puts "CALL save_data  data.size = #{data.size}"
@@ -139,16 +178,6 @@ class AIPlayers
 end
 
 
-class LegalMovesFinder
-  # A class to find the set of all legal moves for a player
-
-  def get_legal_moves(player_color)
-    return [ [5,10], [6,10], [7,10], [8,10], [9,10], [10,10], [11,10]]
-  end
-
-end
-
-
 class BoardSpecs
     # This class models the layout of the gameboard.
     # (The positions of stones on the board are represented by an instance of
@@ -168,7 +197,6 @@ class BoardSpecs
     # puts "      newgame = #{@game.newgame}"
   end
 
-
   def each
     1.upto(MAX) do |i|
       ROW_START[i].upto(ROW_END[i]) do |j|
@@ -178,10 +206,8 @@ class BoardSpecs
     end
   end
 
-
   def valid_point?(point)
     valid = false
-
     if point.class == Array && point.size == 2 && point.count {|p| p.class == Fixnum} == 2
       a = point[0]
       b = point[1]
@@ -189,10 +215,8 @@ class BoardSpecs
         valid = true if b >= ROW_START[a] && b <= ROW_END[a]
       end
     end
-
     return valid
   end
-
 
   def string_to_point(string)
     point = []
@@ -206,14 +230,12 @@ class BoardSpecs
     return point
   end
 
-
   def adjacent?(pt1,pt2)
     adj = true
     adj = false if pt1.class != Array || pt2.class != Array
     adj = false if pt1.size != 2 || pt2.size != 2
     adj = false if [pt1,pt2].flatten.count {|z| z.class == Fixnum} != 4
     adj = false if valid_point?(pt1) == false || valid_point?(pt2) == false
-
     if adj == true
       a1 = pt1[0]
       b1 = pt1[1]
@@ -224,7 +246,6 @@ class BoardSpecs
       adj = false if (a1 == a2+1) && (b1 == b2-1)
       adj = false if (a1 == a2-1) && (b1 == b2+1)
     end
-
     return adj
   end
 
@@ -249,7 +270,6 @@ class BoardSpecs
 
 
   def get_adjacent_points(p,filter)
-
     points = []
     if valid_point?(p)
       a = p[0]
@@ -262,54 +282,237 @@ class BoardSpecs
     return points
   end
 
+end
+
+
+class LegalMovesFinder
+  # A class to find the set of all legal moves for a player
+
+  def initialize(stones)
+    @stones = stones
+    @board = BoardSpecs.new
+    @analyzer = GroupAnalyzer.new(@stones, @board)
+  end
+
+  # def get_legal_moves(player_color)
+  #   return [ [5,10], [6,10], [7,10], [8,10], [9,10], [10,10], [11,10]]
+  # end
+
+  def find_legal_moves(player_color)
+    # puts " "
+    # puts "find_legal_moves()"
+    # puts "   before reload: points.size = #{@points.point_values.size}"
+    # @points.reload
+    # puts "   after reload: points.size = #{@points.point_values.size}"
+    not_legal = []
+
+    groups = @analyzer.find_all_groups
+    eyes = @analyzer.find_empty_points_for_groups(groups)
+
+    one_eye_groups = []
+
+    g1 = eyes.find_all {|gp| gp[:color] == player_color && gp[:eyes].size == 1 }
+    g1.each do |gp|
+      nbrs = @board.all_adjacent_points(gp[:eyes][0])
+      one_eye_groups << gp unless nbrs.find {|pt| @stones.get_point(pt) == :empty }
+    end
+
+    one_eye_groups.each do |gp|
+      point = gp[:eyes][0]
+      g_share = eyes.find_all {|gpx| gpx[:eyes].include?(point) }
+      if g_share.find {|gpz| gpz[:color] == player_color && gpz[:eyes].size > 1 }
+        legal = true
+      elsif g_share.find {|gpz| gpz[:color] != player_color && gpz[:eyes].size == 1 }
+        legal = true
+      else
+        legal = false
+      end
+      not_legal << point if legal == false
+    end
+
+    single_eyes = @analyzer.find_one_eye_points
+    other_color_one_eyes = []
+    single_eyes.each do |eye|
+      nbrs = @board.all_adjacent_points(eye)
+      nbv = nbrs.find_all {|pt| @stones.get_point(pt) == player_color}
+      other_color_one_eyes << eye if nbv.size == 0
+    end
+
+    other_color_one_eyes.each do |eye|
+      nbr_grps = @analyzer.find_other_color_neighbor_groups(eye,player_color)
+      not_legal << eye unless nbr_grps.find {|grp| @analyzer.find_group_airpoints(grp[:stones]).size == 1 }
+    end
+
+    moves = @board.find_all {|point| @stones.get_point(point) == :empty} - not_legal
+
+    return moves
+  end
+
+  def no_neighbors_with_value(point, value)
+    nbrs = @board.all_adjacent_points(point)
+    nbv = nbrs.find_all {|pt| @stones.get_point(pt) == value }
+    q = (nbv.size == 0)
+    return q
+  end
+
+  def neighbors_with_value(point,value)
+    nbrs = @board.all_adjacent_points(point)
+    nbv = nbrs.find_all {|pt| @stones.get_point(pt) == value }
+    return nbv
+  end
 
 end
 
 
-class PointSet
-  # A general purpose collection of values for each point on the game board.
+class GroupAnalyzer
+    # Provides analysis of groups of stones
 
-  attr_accessor :point_values, :bid
+  attr_accessor :group_points
 
-  def initialize(game)
-    @point_values = []
+  def initialize(stones, board)
+    @stones = stones
+    @board = board
+    @group_points = PointSet.new
   end
 
-  def get_point(point)
-    result = @point_values.find {|pt| pt[:point] == point }
-    if result == nil
-      val = :empty
-    else
-      val = result[:value]
-    end
-    return val
-  end
+  def find_all_groups
+    groups = {red: [], white: [], blue: []}
 
-  def set_point(point,value)
-    # puts " "
-    # puts "GameBoardPointSet.set_point()"
-    # puts "   point: #{point[0]},#{point[1]}"
-    # puts "   value: #{value}"
-    # puts "   before: point_values.size = #{@point_values.size}"
-    if value == :empty
-      @point_values.delete_if {|pt| pt[:point] == point }
-    else
-      zz = @point_values.find {|pt| pt[:point] == point }
-      if zz != nil
-        zz[:value] = value
-      else
-        @point_values << {point: point, value: value}
+    @board.each do |point|
+      if @stones.get_point(point) != :empty
+        color = @stones.get_point(point)
+
+        neighbor_groups = find_prior_same_color_neighbor_groups(point,color)
+
+        if neighbor_groups.size == 0
+          group = make_new_group(groups, color)
+          gid = group[:id]
+        else
+          gid = neighbor_groups[0][:id]
+          group = {color: color, id: gid}
+        end
+
+        if neighbor_groups.size > 1
+          old_id = neighbor_groups[1][:id]
+          groups[color][gid].concat( groups[color][old_id] )
+          groups[color][old_id] = nil
+          neighbor_groups[1][:stones].each {|pt| @group_points.set_point(pt,group) }
+        end
+
+        groups[color][gid] << point
+        @group_points.set_point(point,group)
       end
     end
-    # puts "  after (GameBoardPointSet):  point_values.size = #{@point_values.size}"
+
+    [:red, :white, :blue].each {|color| groups[color].compact! }
+    return groups
   end
 
-  def set_points(value, points_array)
-    points_array.each {|pt| set_point(pt,value)}
+  def dead_groups?(color)
+    dead_groups = []
+
+    groups = find_all_groups
+    own_groups = groups[color]
+
+    own_groups.each do |grp|
+      eyes = find_group_airpoints(grp)
+      dead_groups << grp if eyes == []
+    end
+
+    return dead_groups
+  end
+
+  def find_one_eye_points
+    one_eye_points = []
+    empty_points = @board.find_all {|pt| @stones.get_point(pt) == :empty }
+    empty_points.each do |point|
+      nbrs = @board.all_adjacent_points(point)
+      empty_nbrs = nbrs.find {|pt| @stones.get_point(pt) == :empty }
+      one_eye_points << point if empty_nbrs == nil
+    end
+    return one_eye_points
+  end
+
+  def find_prior_same_color_neighbor_groups(point,color)
+    find_neighbor_groups(point, color, :previous)
+  end
+
+  def find_other_color_neighbor_groups(point,first_color)
+    oc_nbrs = []
+    others = [:red, :white, :blue] - [first_color]
+    others.each do |color|
+      nb = find_neighbor_groups(point, color, :all)
+      nb.each do |grp|
+        grp[:color] = color
+        oc_nbrs << grp
+      end
+    end
+    return oc_nbrs
+  end
+
+  def find_neighbor_groups(point,color,search_type)
+    neighbor_groups = []
+    group_ids = []
+
+    if search_type == :previous
+      search_vector = @board.all_previous_adjacent_points(point)
+    elsif search_type == :all
+      search_vector = @board.all_adjacent_points(point)
+    else
+      search_vector = []
+    end
+
+    amigos = []
+    for nb in search_vector
+      amigos << nb if @stones.get_point(nb) == color
+    end
+
+    amigos.each do |pt|
+      grp_id = @group_points.get_point(pt)[:id]
+      group_ids << grp_id if not group_ids.include?(grp_id)
+    end
+
+    group_ids.each do |id|
+      stones = get_group_stones(color, id)
+      grp = {id: id, stones: stones}
+      neighbor_groups << grp
+    end
+
+    return neighbor_groups
+  end
+
+  def get_group_stones(color, id)
+    return @board.find_all {|point| @group_points.get_point(point) == {color: color, id: id} }
+  end
+
+  def find_empty_points_for_groups(groups)
+    empty_points = []
+    [:red, :white, :blue].each do |color|
+      groups[color].each do |group|
+        eyes = find_group_airpoints(group)
+        empty_points << {color: color, eyes: eyes, points: group}
+      end
+    end
+    return empty_points
+  end
+
+  def make_new_group(groups, color)
+    i = groups[color].size
+    groups[color][i] = []
+    group = {color: color, id: i}
+    return group
+  end
+
+  def find_group_airpoints(group)
+    air = []
+    for stone in group
+      air << @board.all_adjacent_points(stone).find_all {|pt| @stones.get_point(pt) == :empty}
+    end
+    air.flatten!(1).uniq!
+    return air
   end
 
 end
-
 
 
 
@@ -739,167 +942,3 @@ end
 #
 #
 #
-# class GroupAnalyzer
-#     # Provides analysis of groups of stones
-#
-#   attr_accessor :group_points
-#
-#   def initialize(game_object)
-#     @game = game_object
-#     @board = @game.board
-#     @points = @board.points
-#
-#     @group_points = GameBoardPointSet.new(@game)
-#     @group_points.bid = "groups"
-#   end
-#
-#
-#   def find_all_groups
-#     groups = {red: [], white: [], blue: []}
-#
-#     @board.each do |point|
-#       if @points.get_point(point) != :empty
-#         color = @points.get_point(point)
-#
-#         neighbor_groups = find_prior_same_color_neighbor_groups(point,color)
-#
-#         if neighbor_groups.size == 0
-#           group = make_new_group(groups, color)
-#           gid = group[:id]
-#         else
-#           gid = neighbor_groups[0][:id]
-#           group = {color: color, id: gid}
-#         end
-#
-#         if neighbor_groups.size > 1
-#           old_id = neighbor_groups[1][:id]
-#           groups[color][gid].concat( groups[color][old_id] )
-#           groups[color][old_id] = nil
-#           neighbor_groups[1][:stones].each {|pt| @group_points.set_point(pt,group) }
-#         end
-#
-#         groups[color][gid] << point
-#         @group_points.set_point(point,group)
-#       end
-#     end
-#
-#     [:red, :white, :blue].each {|color| groups[color].compact! }
-#     return groups
-#   end
-#
-#
-#   def dead_groups?(color)
-#     dead_groups = []
-#
-#     groups = find_all_groups
-#     own_groups = groups[color]
-#
-#     own_groups.each do |grp|
-#       eyes = find_group_airpoints(grp)
-#       dead_groups << grp if eyes == []
-#     end
-#
-#     return dead_groups
-#   end
-#
-#
-#   def find_one_eye_points
-#     one_eye_points = []
-#     empty_points = @board.find_all {|pt| @points.get_point(pt) == :empty }
-#     empty_points.each do |point|
-#       nbrs = @board.all_adjacent_points(point)
-#       empty_nbrs = nbrs.find {|pt| @points.get_point(pt) == :empty }
-#       one_eye_points << point if empty_nbrs == nil
-#     end
-#     return one_eye_points
-#   end
-#
-#
-#   def find_prior_same_color_neighbor_groups(point,color)
-#     find_neighbor_groups(point, color, :previous)
-#   end
-#
-#
-#   def find_other_color_neighbor_groups(point,first_color)
-#     oc_nbrs = []
-#     others = [:red, :white, :blue] - [first_color]
-#     others.each do |color|
-#       nb = find_neighbor_groups(point, color, :all)
-#       nb.each do |grp|
-#         grp[:color] = color
-#         oc_nbrs << grp
-#       end
-#     end
-#     return oc_nbrs
-#   end
-#
-#
-#   def find_neighbor_groups(point,color,search_type)
-#     neighbor_groups = []
-#     group_ids = []
-#
-#     if search_type == :previous
-#       search_vector = @board.all_previous_adjacent_points(point)
-#     elsif search_type == :all
-#       search_vector = @board.all_adjacent_points(point)
-#     else
-#       search_vector = []
-#     end
-#
-#     amigos = []
-#     for nb in search_vector
-#       amigos << nb if @points.get_point(nb) == color
-#     end
-#
-#     amigos.each do |pt|
-#       grp_id = @group_points.get_point(pt)[:id]
-#       group_ids << grp_id if not group_ids.include?(grp_id)
-#     end
-#
-#     group_ids.each do |id|
-#       stones = get_group_stones(color, id)
-#       grp = {id: id, stones: stones}
-#       neighbor_groups << grp
-#     end
-#
-#     return neighbor_groups
-#   end
-#
-#
-#   def get_group_stones(color, id)
-#     return @board.find_all {|point| @group_points.get_point(point) == {color: color, id: id} }
-#   end
-#
-#
-#   def find_empty_points_for_groups(groups)
-#     empty_points = []
-#
-#     [:red, :white, :blue].each do |color|
-#       groups[color].each do |group|
-#         eyes = find_group_airpoints(group)
-#         empty_points << {color: color, eyes: eyes, points: group}
-#       end
-#     end
-#
-#     return empty_points
-#   end
-#
-#
-#   def make_new_group(groups, color)
-#     i = groups[color].size
-#     groups[color][i] = []
-#     group = {color: color, id: i}
-#     return group
-#   end
-#
-#
-#   def find_group_airpoints(group)
-#     air = []
-#     for stone in group
-#       air << @board.all_adjacent_points(stone).find_all {|pt| @board.points.get_point(pt) == :empty}
-#     end
-#     air.flatten!(1).uniq!
-#     return air
-#   end
-#
-# end

@@ -14,7 +14,7 @@ require './test/board_point_stone_test.rb'
 # require './test/game_analysis_test.rb'
 
 # Tests for Legal Moves Methods
-# require './test/legal_moves_test.rb'
+require './test/legal_moves_test.rb'
 
 
 class Go3Test < Test::Unit::TestCase

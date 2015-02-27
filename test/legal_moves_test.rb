@@ -5,11 +5,10 @@ class LegalMovesTest < Test::Unit::TestCase
 
 
   def test_find_legal_moves
-    game = Game.new
-    board = game.board
-    legal_moves = game.legal_moves
+    stones = Stones.new "yes"
+    legal_moves = LegalMovesFinder.new(stones)
 
-    set_test_groups(board,3)
+    set_test_groups(stones,3)
 
     red_moves = legal_moves.find_legal_moves(:red)
     white_moves = legal_moves.find_legal_moves(:white)
@@ -92,5 +91,3 @@ class LegalMovesTest < Test::Unit::TestCase
 
 
 end
-
-
