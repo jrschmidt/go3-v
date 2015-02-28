@@ -24,7 +24,7 @@ post '/make-a-move' do
   puts "POST '/make-a-move'"
   msg_in = request.body.read
   puts "   data = #{msg_in}"
-  move_data = JSON.parse msg_in
+  move_data = JSON.parse msg_in, :symbolize_names => true
   @move_processor = MoveProcessor.new
   str = @move_processor.process_move move_data
   return str
@@ -41,19 +41,20 @@ class MoveProcessor
   def process_move(move_data)
     puts "MoveProcessor#process_move"
     puts "   move_data = #{move_data.to_s}"
-    puts "   newgame = #{move_data["new"]}"
-    @stones = Stones.new move_data["new"]
+    puts "   newgame = #{move_data[:new]}"
+    @stones = Stones.new move_data[:new]
     @legal_moves = LegalMovesFinder.new(@stones)
-    @ai_players = AIPlayers.new(@legal_moves)
-    red_move = move_data["red"]
+    @ai_players = AIPlayers.new(@legal_moves, @stones)
+    red_move = move_data[:red]
     @stones.place_stone :red, red_move
     white_move = @ai_players.get_move :white
     @stones.place_stone :white, white_move
     blue_move = @ai_players.get_move :blue
     @stones.place_stone :blue, blue_move
-    # legal_red_moves = [ [1,1], [2,2], [3,3], [4,4], [5,5], [6,6], [7,7], [8,8], [9,9], [10,10], [11,11] ]
-    legal_red_moves = @legal_moves.find_legal_moves :red
+    puts " "
+    legal_red_moves = @legal_moves.find_legal_moves :red, @stones
     return build_response white_move, blue_move, legal_red_moves
+    puts " "
   end
 
   def build_response(white, blue, legal_red)
@@ -81,10 +82,12 @@ class PointSet
     else
       val = result[:value]
     end
+    # binding.pry if ["red", "white", "blue"].include? val
     return val
   end
 
   def set_point(point,value)
+    # binding.pry if point == nil
     # puts " "
     # puts "GameBoardPointSet.set_point()"
     # puts "   point: #{point[0]},#{point[1]}"
@@ -112,6 +115,8 @@ end
 
 class Stones < PointSet
 
+  attr_accessor :values
+
   def initialize(newgame)
     @persist = GamePersist.new
     if newgame == "yes"
@@ -122,9 +127,12 @@ class Stones < PointSet
   end
 
   def place_stone(color, point)
+    # binding.pry if point == nil
     puts "Stones#place_stone"
     puts "   color = #{color}"
-    puts "   point = #{point[0]}, #{point[1]}"
+    puts "   point = #{point.to_s}"
+    set_point point, color
+    @persist.save_data @values
   end
 
 end
@@ -139,17 +147,23 @@ class GamePersist
   def read_data
     puts " "
     puts "GamePersist#read_data()"
-    str = File.read(@filename)
+    str = File.read @filename
     puts "   str = #{str}"
-    jsn = JSON.parse(str)
+    jsn = JSON.parse str, :symbolize_names => true
     puts "   jsn = #{jsn}"
-    points_array = jsn["stones"]
+    points_array = jsn[:stones]
+    puts "   raw array from JSON ="
+    points_array.each {|pt| puts "     #{pt.to_s}" }
+    points_array.map! {|pt| {point: pt[:point], value: pt[:value].to_sym} }
     puts "   points_array ="
-    points_array.each {|pt| puts "     #{pt[0]}, #{pt[1]}" }
+    points_array.each {|pt| puts "     #{pt.to_s}" }
+    puts " "
+    # binding.pry
     return points_array
   end
 
   def save_data(data)
+    # binding.pry
     # puts "CALL save_data  data.size = #{data.size}"
     File.open(@filename, "w") do |f|
       pts = {stones: data}
@@ -161,16 +175,20 @@ end
 
 
 class AIPlayers
+  # AI VERSION:  0.1
+  # Random selection from set of legal playable points. No additional heuristic.
 
-  def initialize(legal_moves)
+  def initialize(legal_moves, stones)
     @legal_moves = legal_moves
+    @stones = stones
   end
 
   def get_move(color)
+    puts " "
     puts "AIPlayers#get_move"
     puts "   color = #{color}"
-    point = [3,3] if color == :white
-    point = [5,5] if color == :blue
+    open = @legal_moves.find_legal_moves color, @stones
+    point = open.sample
     puts "   point = #{point[0]}, #{point[1]}"
     return point
   end
@@ -298,12 +316,10 @@ class LegalMovesFinder
   #   return [ [5,10], [6,10], [7,10], [8,10], [9,10], [10,10], [11,10]]
   # end
 
-  def find_legal_moves(player_color)
-    # puts " "
-    # puts "find_legal_moves()"
-    # puts "   before reload: points.size = #{@points.point_values.size}"
-    # @points.reload
-    # puts "   after reload: points.size = #{@points.point_values.size}"
+  def find_legal_moves(player_color, stones)
+    puts "find_legal_moves()"
+    puts "   color = #{player_color}"
+    puts "   before: @stones.values.size = #{@stones.values.size}"
     not_legal = []
 
     groups = @analyzer.find_all_groups
@@ -343,7 +359,15 @@ class LegalMovesFinder
       not_legal << eye unless nbr_grps.find {|grp| @analyzer.find_group_airpoints(grp[:stones]).size == 1 }
     end
 
-    moves = @board.find_all {|point| @stones.get_point(point) == :empty} - not_legal
+    puts "   before looking for empty points:"
+    stones.values.each {|pt| puts "     #{pt.to_s}" }
+    # binding.pry
+    all_empties = @board.find_all {|point| stones.get_point(point) == :empty}
+    puts "   #{all_empties.size} empty points"
+    puts "   #{not_legal.size} empty points are not legal moves for #{player_color}"
+    moves = all_empties - not_legal
+    puts "   number of legal moves should be #{moves.size}"
+    # moves = @board.find_all {|point| @stones.get_point(point) == :empty} - not_legal
 
     return moves
   end
@@ -497,6 +521,7 @@ class GroupAnalyzer
   end
 
   def make_new_group(groups, color)
+    # binding.pry
     i = groups[color].size
     groups[color][i] = []
     group = {color: color, id: i}
