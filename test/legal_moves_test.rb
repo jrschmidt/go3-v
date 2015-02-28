@@ -6,13 +6,15 @@ class LegalMovesTest < Test::Unit::TestCase
 
   def test_find_legal_moves
     stones = Stones.new "yes"
-    legal_moves = LegalMovesFinder.new(stones)
+    board = BoardSpecs.new
+    analyzer = GroupAnalyzer.new(stones, board)
+    legal_moves = LegalMovesFinder.new(stones, board, analyzer)
 
     set_test_groups(stones,3)
 
-    red_moves = legal_moves.find_legal_moves(:red)
-    white_moves = legal_moves.find_legal_moves(:white)
-    blue_moves = legal_moves.find_legal_moves(:blue)
+    red_moves = legal_moves.find_legal_moves(:red, stones)
+    white_moves = legal_moves.find_legal_moves(:white, stones)
+    blue_moves = legal_moves.find_legal_moves(:blue, stones)
 
     assert_equal red_moves.size, 45
     assert_equal white_moves.size, 46

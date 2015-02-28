@@ -26,35 +26,48 @@ post '/make-a-move' do
   puts "   data = #{msg_in}"
   move_data = JSON.parse msg_in, :symbolize_names => true
   @move_processor = MoveProcessor.new
-  str = @move_processor.process_move move_data
+  str = @move_processor.process_client_move move_data
   return str
 end
 
 
 class MoveProcessor
 
-  # def initialize
-  #   @legal_moves = LegalMovesFinder.new
-  #   @ai_players = AIPlayers.new(@legal_moves)
-  # end
-
-  def process_move(move_data)
-    puts "MoveProcessor#process_move"
+  def process_client_move(move_data)
+    puts "MoveProcessor#process_client_move"
     puts "   move_data = #{move_data.to_s}"
     puts "   newgame = #{move_data[:new]}"
     @stones = Stones.new move_data[:new]
-    @legal_moves = LegalMovesFinder.new(@stones)
+    @board = BoardSpecs.new
+    @analyzer = GroupAnalyzer.new(@stones, @board)
+    @legal_moves = LegalMovesFinder.new(@stones, @board, @analyzer)
     @ai_players = AIPlayers.new(@legal_moves, @stones)
     red_move = move_data[:red]
-    @stones.place_stone :red, red_move
+    make_move :red, red_move
     white_move = @ai_players.get_move :white
-    @stones.place_stone :white, white_move
+    make_move :white, white_move
     blue_move = @ai_players.get_move :blue
-    @stones.place_stone :blue, blue_move
+    make_move :blue, blue_move
     puts " "
     legal_red_moves = @legal_moves.find_legal_moves :red, @stones
     return build_response white_move, blue_move, legal_red_moves
     puts " "
+  end
+
+  def make_move(color, point)
+    @stones.place_stone color, point
+    remove_dead_stones_after_move(color)
+  end
+
+  def remove_dead_stones_after_move(color)
+    opponents = [:red, :white, :blue]
+    opponents.delete(color)
+    opponents.each do |opp|
+      dead_groups = @analyzer.dead_groups?(opp)
+      dead_groups.each do |grp|
+        @stones.set_points(:empty, grp)
+      end
+    end
   end
 
   def build_response(white, blue, legal_red)
@@ -306,15 +319,11 @@ end
 class LegalMovesFinder
   # A class to find the set of all legal moves for a player
 
-  def initialize(stones)
+  def initialize(stones, board, analyzer)
     @stones = stones
-    @board = BoardSpecs.new
-    @analyzer = GroupAnalyzer.new(@stones, @board)
+    @board = board
+    @analyzer = analyzer
   end
-
-  # def get_legal_moves(player_color)
-  #   return [ [5,10], [6,10], [7,10], [8,10], [9,10], [10,10], [11,10]]
-  # end
 
   def find_legal_moves(player_color, stones)
     puts "find_legal_moves()"
