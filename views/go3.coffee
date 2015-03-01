@@ -7,23 +7,6 @@
 #  from the server a new set of legal moves.
 
 
-class Zipper
-
-  constructor: () ->
-    @board = new Board(this)
-    legal_points = new LegalPlayablePoints
-    # @clickster = new ClickHandler(@lpo,@board.drawing_object)
-
-
-  # click: (x,y) ->
-  #   @clickster.click_handle(x,y)
-
-
-  update: (points) ->
-    @lpo.update_legal_moves(points)
-
-
-
 class BoardStats
 
   constructor: (main_object) ->
@@ -68,49 +51,6 @@ class BoardStats
               [[5,1], [11,7]],
               [[6,1], [11,6]] ]
 
-    # @drawing_object = new CanvasHelper(this)
-
-
-
-class LegalPlayablePoints
-
-  constructor: (main_object) ->
-    @row_start = [1,1,1,1,1,1,2,3,4,5,6]
-    @row_end = [6,7,8,9,10,11,11,11,11,11,11]
-    @points = @get_init_legal_moves()
-
-
-  get_init_legal_moves: () ->
-    points = []
-    for i in [0..10]
-      for j in [@row_start[i]..@row_end[i]]
-        pp = {}
-        pp.a = j
-        pp.b = i+1
-        points.push(pp)
-    return points
-
-
-  legal_move: (point) ->
-    console.log "legalmove()"
-    console.log "  point = #{point[0]}, #{point[1]}"
-    point_in = @points.some (p) -> p.a == point[0] and p.b == point[1]
-    console.log "legal_move = #{point_in}"
-    return point_in
-
-
-  update_legal_moves: (points) ->
-    console.log "LegalPlayablePoints#update_legal_moves()"
-    console.log "  points.length = #{points.length}"
-    console.log "  points[0] = #{points[0]}"
-    console.log "  points[1] = #{points[1]}"
-    console.log "  points[14] = #{points[14]}"
-    console.log "  points[56] = #{points[56]}"
-    console.log "  points[70] = #{points[70]}"
-    console.log "  points[87] = #{points[87]}"
-    @points = []
-    @points.push(pt) for pt in points
-
 
 
 class CanvasHelper
@@ -139,7 +79,7 @@ class CanvasHelper
     point = []
     a = -1
     b = -1
-    r2 = 999 # TODO Probably can drop initializations for a,b,r2
+    r2 = 999
     in_bounds = true
     b = Math.floor((y-28)/44)+1
     a = Math.floor((x-125+25*b)/50)
@@ -291,9 +231,8 @@ class BoardLines
     context.closePath()
 
 
-# GLOBAL level (global to this document)
 
-
+# GLOBAL level
 
 @mousedown = (e) ->
   @canvas = document.getElementById('go-board')
@@ -303,12 +242,8 @@ class BoardLines
   py = e.pageY
   x = px-dx
   y = py-dy
-
-  # @canvas_object = canvas_object
-  # point = @canvas_object.get_point(x,y)
   point = @canvas_helper.get_point(x,y)
   if legal_move(point)
-    console.log "click_handle: legal_move = true"
     @canvas_helper.draw_stone(point,"R")
     obj_out = {red: point, new: @newgame}
     msg_out = JSON.stringify(obj_out)
@@ -317,34 +252,17 @@ class BoardLines
     xhr.open('POST',url)
     xhr.onreadystatechange = ->
       if (xhr.readyState == 4 && xhr.status == 200)
-        console.log ("ready state = #{xhr.readyState}")
         msg_in = xhr.responseText
-        console.log ("msg_in = #{msg_in}")
         response = JSON.parse(msg_in)
         add_stones(response)
         points = response.red
         update(points)
     xhr.send(msg_out)
     @newgame = "no"
-  else
-    console.log "click_handle: legal_move = false"
 
 
-# TODO This can be shortened to a one line method.
 legal_move = (point) ->
-  console.log "legal_move() [GLOBAL]"
-  console.log "  point = #{point[0]}, #{point[1]}"
-  console.log "  before: points.length = #{points.length}"
-  t = @points.some (p) -> p[0] == point[0] and p[1] == point[1]
-  if t == true
-    point_in = true
-  else
-    point_in = false
-  # point_in = @points.some (p) -> p[0] == point[0] and p[1] == point[1]
-  # point_in = @points.some (p) -> p.a == point[0] and p.b == point[1]
-  console.log "  after: points.length = #{points.length}"
-  console.log "  legal_move = #{point_in}"
-  return point_in
+  return @points.some (p) -> p[0] == point[0] and p[1] == point[1]
 
 
 get_init_legal_moves = () ->
@@ -366,10 +284,7 @@ add_stones = (response) ->
 
 
 update = (points) ->
-  console.log "Update()  [GLOBAL]"
-  console.log "  before: points.length = #{points.length}"
   @points = points
-  console.log "  after: points.length = #{points.length}"
 
 
 start = () ->
