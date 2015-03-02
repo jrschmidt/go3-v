@@ -113,11 +113,11 @@ class CanvasHelper
 
   get_rgb: (color) ->
     switch color
-      when "R"
+      when "red"
         clr = "#cc3333"
-      when "W"
+      when "white"
         clr = "#f0f0f0"
-      when "B"
+      when "blue"
         clr = "#5050cc"
     return clr
 
@@ -143,6 +143,14 @@ class CanvasHelper
     @context.lineTo(xx+20,yy)
     @context.stroke()
     @context.closePath()
+
+
+  redraw: (stones) ->
+    @board_base.draw_base()
+    @board_lines.draw_lines()
+    for color, points of stones
+      for ab in points
+        @draw_stone(ab,color)
 
 
 
@@ -244,7 +252,7 @@ class BoardLines
   y = py-dy
   point = @canvas_helper.get_point(x,y)
   if legal_move(point)
-    @canvas_helper.draw_stone(point,"R")
+    @canvas_helper.draw_stone(point,"red")
     obj_out = {red_move: point, new_game: @newgame}
     msg_out = JSON.stringify(obj_out)
     xhr = new XMLHttpRequest()
@@ -255,42 +263,47 @@ class BoardLines
         msg_in = xhr.responseText
         response = JSON.parse(msg_in)
         add_stones(response)
-        points = response.legal_red_moves
-        update(points)
+        update_legal_moves(response.legal_red_moves)
     xhr.send(msg_out)
     @newgame = "no"
 
 
 legal_move = (point) ->
-  return @points.some (p) -> p[0] == point[0] and p[1] == point[1]
+  return @legal_moves.some (p) -> p[0] == point[0] and p[1] == point[1]
 
 
 get_init_legal_moves = () ->
-  points = []
+  legal_moves = []
   for i in [0..10]
     for j in [@canvas_helper.board.row_start[i]..@canvas_helper.board.row_end[i]]
       pp = {}
       pp[0] = j
       pp[1] = i+1
-      points.push(pp)
-  return points
+      legal_moves.push(pp)
+  return legal_moves
 
 
 add_stones = (response) ->
-  ww = response.white_move
-  bb = response.blue_move
-  @canvas_helper.draw_stone(ww, "W")
-  @canvas_helper.draw_stone(bb, "B")
+  if response.stones == undefined
+    @canvas_helper.draw_stone(response.white_move, "white")
+    @canvas_helper.draw_stone(response.blue_move, "blue")
+  else
+    stones = JSON.parse(response.stones)
+    reset(stones)
 
 
-update = (points) ->
-  @points = points
+reset = (stones) ->
+  @canvas_helper.redraw(stones)
+
+
+update_legal_moves = (legal_moves) ->
+  @legal_moves = legal_moves
 
 
 start = () ->
   @newgame = "yes"
   @canvas_helper = new CanvasHelper
-  @points = get_init_legal_moves()
+  @legal_moves = get_init_legal_moves()
 
 
 
