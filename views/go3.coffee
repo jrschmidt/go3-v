@@ -245,7 +245,7 @@ class BoardLines
   point = @canvas_helper.get_point(x,y)
   if legal_move(point)
     @canvas_helper.draw_stone(point,"R")
-    obj_out = {red: point, new: @newgame}
+    obj_out = {red_move: point, new_game: @newgame}
     msg_out = JSON.stringify(obj_out)
     xhr = new XMLHttpRequest()
     url = "/make-a-move"
@@ -255,7 +255,7 @@ class BoardLines
         msg_in = xhr.responseText
         response = JSON.parse(msg_in)
         add_stones(response)
-        points = response.red
+        points = response.legal_red_moves
         update(points)
     xhr.send(msg_out)
     @newgame = "no"
@@ -277,8 +277,8 @@ get_init_legal_moves = () ->
 
 
 add_stones = (response) ->
-  ww = response["white"]
-  bb = response["blue"]
+  ww = response.white_move
+  bb = response.blue_move
   @canvas_helper.draw_stone(ww, "W")
   @canvas_helper.draw_stone(bb, "B")
 

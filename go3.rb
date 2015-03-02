@@ -32,12 +32,12 @@ end
 class MoveProcessor
 
   def process_client_move(move_data)
-    @stones = Stones.new move_data[:new]
+    @stones = Stones.new move_data[:new_game]
     @board = BoardSpecs.new
     @analyzer = GroupAnalyzer.new(@stones, @board)
     @legal_moves = LegalMovesFinder.new(@stones, @board, @analyzer)
     @ai_players = AIPlayers.new(@legal_moves, @stones)
-    red_move = move_data[:red]
+    red_move = move_data[:red_move]
     make_move :red, red_move
     white_move = @ai_players.get_move :white
     make_move :white, white_move
@@ -65,9 +65,9 @@ class MoveProcessor
 
   def build_response(white, blue, legal_red)
     response = {
-      white: white,
-      blue: blue,
-      red: legal_red }
+      white_move: white,
+      blue_move: blue,
+      legal_red_moves: legal_red }
     return response.to_json
   end
 
