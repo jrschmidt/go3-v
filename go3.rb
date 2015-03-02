@@ -37,6 +37,7 @@ class MoveProcessor
     @analyzer = GroupAnalyzer.new(@stones, @board)
     @legal_moves = LegalMovesFinder.new(@stones, @board, @analyzer)
     @ai_players = AIPlayers.new(@legal_moves, @stones)
+    @reset = :no
     red_move = move_data[:red_move]
     make_move :red, red_move
     white_move = @ai_players.get_move :white
@@ -57,8 +58,9 @@ class MoveProcessor
     opponents.delete(color)
     opponents.each do |opp|
       dead_groups = @analyzer.dead_groups?(opp)
-      dead_groups.each do |grp|
-        @stones.set_points(:empty, grp)
+      if dead_groups.size > 0
+        @reset = :yes
+        dead_groups.each {|grp| @stones.set_points(:empty, grp)}
       end
     end
   end
@@ -68,6 +70,7 @@ class MoveProcessor
       white_move: white,
       blue_move: blue,
       legal_red_moves: legal_red }
+    response[:stones] = @stones.get_json if @reset == :yes
     return response.to_json
   end
 
@@ -127,6 +130,12 @@ class Stones < PointSet
   def place_stone(color, point)
     set_point point, color
     @persist.save_data @values
+  end
+
+  def get_json
+    rwb = {red: [], white: [], blue: []}
+    @values.each {|pt| rwb[pt[:value]] << pt[:point]}
+    return rwb.to_json
   end
 
 end
@@ -209,17 +218,17 @@ class BoardSpecs
     return valid
   end
 
-  def string_to_point(string)
-    point = []
-    if string.size == 2
-      string.each_char do |ch|
-        if ["1","2","3","4","5","6","7","8","9","a","b"].include?(ch)
-          point << ch.to_i(16)
-        end
-      end
-    end
-    return point
-  end
+  # def string_to_point(string)
+  #   point = []
+  #   if string.size == 2
+  #     string.each_char do |ch|
+  #       if ["1","2","3","4","5","6","7","8","9","a","b"].include?(ch)
+  #         point << ch.to_i(16)
+  #       end
+  #     end
+  #   end
+  #   return point
+  # end
 
   def adjacent?(pt1,pt2)
     adj = true
