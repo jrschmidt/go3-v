@@ -54,14 +54,18 @@ class MoveProcessor
   end
 
   def remove_dead_stones_after_move(color)
+    dead_stones = []
     opponents = [:red, :white, :blue]
     opponents.delete(color)
     opponents.each do |opp|
       dead_groups = @analyzer.dead_groups?(opp)
       if dead_groups.size > 0
-        @reset = :yes
-        dead_groups.each {|grp| @stones.set_points(:empty, grp)}
+        dead_groups.each {|grp| grp.each {|pt| dead_stones << pt} }
       end
+    end
+    if dead_stones.size > 0
+      @reset = :yes
+      dead_stones.each {|pt| @stones.set_point(pt, :empty)}
     end
   end
 
@@ -217,18 +221,6 @@ class BoardSpecs
     end
     return valid
   end
-
-  # def string_to_point(string)
-  #   point = []
-  #   if string.size == 2
-  #     string.each_char do |ch|
-  #       if ["1","2","3","4","5","6","7","8","9","a","b"].include?(ch)
-  #         point << ch.to_i(16)
-  #       end
-  #     end
-  #   end
-  #   return point
-  # end
 
   def adjacent?(pt1,pt2)
     adj = true
