@@ -276,7 +276,10 @@ get_init_legal_moves = () ->
   legal_moves = []
   for i in [0..10]
     for j in [@canvas_helper.board.row_start[i]..@canvas_helper.board.row_end[i]]
-      pp = {}
+      # TODO Why is this {} instead of [] ? Is this a mistake? (One that
+      # accidentally works anyway?) TODO
+      # FIXME It looks like the answer is "yes". FIXME
+      pp = []
       pp[0] = j
       pp[1] = i+1
       legal_moves.push(pp)

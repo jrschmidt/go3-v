@@ -31,11 +31,15 @@ end
 
 class MoveProcessor
 
-  def process_client_move(move_data)
-    @stones = Stones.new move_data[:new_game]
+  def initialize
+    @stones = Stones.new "new"
     @board = BoardSpecs.new
     @analyzer = GroupAnalyzer.new(@stones, @board)
     @legal_moves = LegalMovesFinder.new(@stones, @board, @analyzer)
+  end
+
+  def process_client_move(move_data)
+    @stones = Stones.new move_data[:new_game]
     @ai_players = AIPlayers.new(@legal_moves, @stones)
     @reset = :no
     red_move = move_data[:red_move]
@@ -193,8 +197,6 @@ class BoardSpecs
     # the GameBoardPoints class.)
 
   include Enumerable
-
-  attr_accessor :points, :game
 
   ROW_START = [nil,1,1,1,1,1,1,2,3,4,5,6]
   ROW_END = [nil,6,7,8,9,10,11,11,11,11,11,11]

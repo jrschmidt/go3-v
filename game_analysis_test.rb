@@ -1,4 +1,8 @@
 # Tests for Game Analysis Methods
+
+require './go3.rb'
+require 'pry'
+
 class GameAnalysisTest < Test::Unit::TestCase
   include TestHelpers
   include TestData
@@ -7,15 +11,15 @@ class GameAnalysisTest < Test::Unit::TestCase
   def test_find_same_color_neighbor_groups_1
     # When the point will be added to a single existing group
 
-    game = Game.new
-    board = game.board
-    analyzer = game.analyzer
-    points = board.points
-    group_points = game.analyzer.group_points
+    board = BoardSpecs.new
+    stones = Stones.new("yes")
+    analyzer = GroupAnalyzer.new(stones, board)
+    group_points = analyzer.group_points
 
-    points.set_points :red, [ [3,3], [4,3] ]
-    points.set_points :white, [ [3,1], [2,2], [3,2], [5,1], [6,1], [5,3] ]
-    points.set_points :blue, [ [1,2], [2,3], [5,2], [6,2] ]
+
+    stones.set_points :red, [ [3,3], [4,3] ]
+    stones.set_points :white, [ [3,1], [2,2], [3,2], [5,1], [6,1], [5,3] ]
+    stones.set_points :blue, [ [1,2], [2,3], [5,2], [6,2] ]
 
     group_points.set_points( {color: :red, id: 0}, [ [3,3], [4,3] ] )
     group_points.set_points( {color: :white, id: 0}, [ [3,1], [2,2], [3,2] ] )
@@ -32,15 +36,15 @@ class GameAnalysisTest < Test::Unit::TestCase
   def test_find_same_color_neighbor_groups_2
     # When the point will be added to two groups after they are merged
 
-    game = Game.new
-    board = game.board
-    analyzer = game.analyzer
-    points = board.points
-    group_points = game.analyzer.group_points
+    board = BoardSpecs.new
+    stones = Stones.new("yes")
+    analyzer = GroupAnalyzer.new(stones, board)
+    group_points = analyzer.group_points
 
-    points.set_points :red, [ [3,2], [4,2], [4,4], [5,4], [6,3], [7,3] ]
-    points.set_points :white, [ [5,2], [6,2] ]
-    points.set_points :blue, [ [1,2], [2,3], [3,3] ]
+
+    stones.set_points :red, [ [3,2], [4,2], [4,4], [5,4], [6,3], [7,3] ]
+    stones.set_points :white, [ [5,2], [6,2] ]
+    stones.set_points :blue, [ [1,2], [2,3], [3,3] ]
 
     group_points.set_points( {color: :red, id: 0}, [ [3,2], [4,2] ] )
     group_points.set_points( {color: :red, id: 1}, [ [6,3], [7,3] ] )
@@ -58,15 +62,14 @@ class GameAnalysisTest < Test::Unit::TestCase
 
   def test_find_other_color_neighbor_groups
 
-    game = Game.new
-    board = game.board
-    analyzer = game.analyzer
-    points = board.points
-    group_points = game.analyzer.group_points
+    board = BoardSpecs.new
+    stones = Stones.new("yes")
+    analyzer = GroupAnalyzer.new(stones, board)
+    group_points = analyzer.group_points
 
-    points.set_points :red, [ [3,3], [4,3] ]
-    points.set_points :white, [ [3,1], [2,2], [3,2], [5,1], [6,1], [5,3] ]
-    points.set_points :blue, [ [1,2], [2,3], [5,2], [6,2] ]
+    stones.set_points :red, [ [3,3], [4,3] ]
+    stones.set_points :white, [ [3,1], [2,2], [3,2], [5,1], [6,1], [5,3] ]
+    stones.set_points :blue, [ [1,2], [2,3], [5,2], [6,2] ]
 
     group_points.set_points( {color: :red, id: 0}, [ [3,3], [4,3] ] )
     group_points.set_points( {color: :white, id: 0}, [ [3,1], [2,2], [3,2] ] )
@@ -86,15 +89,15 @@ class GameAnalysisTest < Test::Unit::TestCase
 
 
   def test_get_group_stones
-    game = Game.new
-    board = game.board
-    analyzer = game.analyzer
-    points = board.points
-    group_points = game.analyzer.group_points
 
-    points.set_points :red, [ [2,4], [3,4], [4,5], [4,6], [3,7], [4,7], [5,7] ]
-    points.set_points :white, [ [2,3], [3,3], [3,2], [6,2], [6,5], [7,6] ]
-    points.set_points :blue, [ [3,5], [3,6], [5,3], [6,3], [7,4], [8,5] ]
+    board = BoardSpecs.new
+    stones = Stones.new("yes")
+    analyzer = GroupAnalyzer.new(stones, board)
+    group_points = analyzer.group_points
+
+    stones.set_points :red, [ [2,4], [3,4], [4,5], [4,6], [3,7], [4,7], [5,7] ]
+    stones.set_points :white, [ [2,3], [3,3], [3,2], [6,2], [6,5], [7,6] ]
+    stones.set_points :blue, [ [3,5], [3,6], [5,3], [6,3], [7,4], [8,5] ]
 
     group_points.set_points( {color: :red, id: 0}, [ [2,4], [3,4], [4,5], [4,6], [3,7], [4,7], [5,7] ] )
     group_points.set_points( {color: :white, id: 0}, [ [2,3], [3,3], [3,2] ] )
@@ -123,16 +126,19 @@ class GameAnalysisTest < Test::Unit::TestCase
     assert_contain_same_objects exp_white2, white2
     assert_contain_same_objects exp_blue0, blue0
     assert_contain_same_objects exp_blue1, blue1
+
   end
 
 
   def test_find_all_groups_1
-    game = Game.new
-    board = game.board
 
-    set_test_groups(board,1)
+    board = BoardSpecs.new
+    stones = Stones.new("yes")
+    analyzer = GroupAnalyzer.new(stones, board)
 
-    groups = game.analyzer.find_all_groups()
+    set_test_groups(stones,1)
+
+    groups = analyzer.find_all_groups()
     assert_rwb_hash(groups, Array)
 
     red = groups[:red]
@@ -166,12 +172,14 @@ class GameAnalysisTest < Test::Unit::TestCase
 
 
   def test_find_all_groups_3
-    game = Game.new
-    board = game.board
 
-    set_test_groups(board,3)
+    board = BoardSpecs.new
+    stones = Stones.new("yes")
+    analyzer = GroupAnalyzer.new(stones, board)
 
-    groups = game.analyzer.find_all_groups()
+    set_test_groups(stones,3)
+
+    groups = analyzer.find_all_groups()
     assert_rwb_hash(groups, Array)
 
     red = groups[:red]
@@ -216,10 +224,11 @@ class GameAnalysisTest < Test::Unit::TestCase
 
   def test_find_group_airpoints
 
-    game = Game.new
-    board = game.board
+    board = BoardSpecs.new
+    stones = Stones.new("yes")
+    analyzer = GroupAnalyzer.new(stones, board)
 
-    set_test_groups(board,1)
+    set_test_groups(stones,1)
 
     # Red Group #1 - 7 stones, 13 airpoints
     red1 = { stones: [ [3,4], [4,6], [4,7], [4,5], [2,4], [3,7], [5,7] ],
@@ -252,18 +261,19 @@ class GameAnalysisTest < Test::Unit::TestCase
     groups = [red1, white1, white2, white3, blue1, blue2, blue3]
 
     for group in groups
-      spaces = game.analyzer.find_group_airpoints(group[:stones])
+      spaces = analyzer.find_group_airpoints(group[:stones])
       assert_contain_same_objects group[:expected_points], spaces
     end
   end
 
 
   def test_find_empty_points_for_groups
-    game = Game.new
-    analyzer = game.analyzer
-    board = game.board
 
-    set_test_groups(board,3)
+    board = BoardSpecs.new
+    stones = Stones.new("yes")
+    analyzer = GroupAnalyzer.new(stones, board)
+
+    set_test_groups(stones,3)
     groups = analyzer.find_all_groups
 
     empty_points = analyzer.find_empty_points_for_groups(groups)
@@ -338,133 +348,133 @@ class GameAnalysisTest < Test::Unit::TestCase
 
 
   def test_find_dead_groups
-    game = Game.new
-    board = game.board
-    points = board.points
-    analyzer = game.analyzer
 
-    points.set_point([3,4], :red)
+    board = BoardSpecs.new
+    stones = Stones.new("yes")
+    analyzer = GroupAnalyzer.new(stones, board)
+
+    stones.set_point([3,4], :red)
     assert_equal analyzer.dead_groups?(:white), []
     assert_equal analyzer.dead_groups?(:blue), []
 
-    points.set_point([4,5], :white)
+    stones.set_point([4,5], :white)
     assert_equal analyzer.dead_groups?(:red), []
     assert_equal analyzer.dead_groups?(:blue), []
 
-    points.set_point([5,6], :blue)
+    stones.set_point([5,6], :blue)
     assert_equal analyzer.dead_groups?(:red), []
     assert_equal analyzer.dead_groups?(:white), []
 
-    points.set_point([5,5], :red)
+    stones.set_point([5,5], :red)
     assert_equal analyzer.dead_groups?(:white), []
     assert_equal analyzer.dead_groups?(:blue), []
 
-    points.set_point([11,8], :white)
+    stones.set_point([11,8], :white)
     assert_equal analyzer.dead_groups?(:red), []
     assert_equal analyzer.dead_groups?(:blue), []
 
-    points.set_point([4,6], :blue)
+    stones.set_point([4,6], :blue)
     assert_equal analyzer.dead_groups?(:red), []
     assert_equal analyzer.dead_groups?(:white), []
 
-    points.set_point([4,4], :red)
+    stones.set_point([4,4], :red)
     assert_equal analyzer.dead_groups?(:white), []
     assert_equal analyzer.dead_groups?(:blue), []
 
-    points.set_point([11,9], :white)
+    stones.set_point([11,9], :white)
     assert_equal analyzer.dead_groups?(:red), []
     assert_equal analyzer.dead_groups?(:blue), []
 
     # BLUE PLAY AT [3,5] KILLS WHITE STONE AT [4,5]
-    points.set_point([3,5], :blue)
+    stones.set_point([3,5], :blue)
     assert_equal analyzer.dead_groups?(:red), []
     wh = analyzer.dead_groups?(:white)
     assert wh.include? [ [4,5] ]
 
-    points.set_point([10,7], :red)
+    stones.set_point([10,7], :red)
     # List of dead white groups will be unchanged
     assert_equal analyzer.dead_groups?(:white), wh
     assert_equal analyzer.dead_groups?(:blue), []
 
-    points.set_point([5,8], :white)
+    stones.set_point([5,8], :white)
     assert_equal analyzer.dead_groups?(:red), []
     assert_equal analyzer.dead_groups?(:blue), []
 
-    points.set_point([10,9], :blue)
+    stones.set_point([10,9], :blue)
     assert_equal analyzer.dead_groups?(:red), []
     assert_equal analyzer.dead_groups?(:white), wh
 
-    points.set_point([10,8], :red)
+    stones.set_point([10,8], :red)
     assert_equal analyzer.dead_groups?(:white), wh
     assert_equal analyzer.dead_groups?(:blue), []
 
-    points.set_point([7,10], :white)
+    stones.set_point([7,10], :white)
     assert_equal analyzer.dead_groups?(:red), []
     assert_equal analyzer.dead_groups?(:blue), []
 
-    points.set_point([11,10], :blue)
+    stones.set_point([11,10], :blue)
     assert_equal analyzer.dead_groups?(:red), []
     assert_equal analyzer.dead_groups?(:white), wh
 
     # RED PLAY AT [11,7] KILLS WHITE STONES AT [11,8] and [11,9]
-    points.set_point([11,7], :red)
+    stones.set_point([11,7], :red)
     assert_equal analyzer.dead_groups?(:blue), []
     wh = analyzer.dead_groups?(:white)
     assert (wh.include? [ [11,8], [11,9] ] ) || (wh.include? [ [11,9], [11,8] ] )
+
   end
 
 
   def test_make_move_remove_dead_groups
-    game = Game.new
-    board = game.board
-    points = board.points
-    manager = game.manager
-    analyzer = game.analyzer
 
-    manager.make_a_move(:red, [3,4])
-    manager.make_a_move(:white, [4,5])
-    manager.make_a_move(:blue, [5,6])
-    manager.make_a_move(:red, [5,5])
-    manager.make_a_move(:white, [11,8])
-    manager.make_a_move(:blue, [4,6])
-    manager.make_a_move(:red, [4,4])
-    manager.make_a_move(:white, [11,9])
+    processor = MoveProcessor.new
+    board = BoardSpecs.new
+    stones = Stones.new("yes")
+    analyzer = GroupAnalyzer.new(stones, board)
+
+    processor.make_move(:red, [3,4])
+    processor.make_move(:white, [4,5])
+    processor.make_move(:blue, [5,6])
+    processor.make_move(:red, [5,5])
+    processor.make_move(:white, [11,8])
+    processor.make_move(:blue, [4,6])
+    processor.make_move(:red, [4,4])
+    processor.make_move(:white, [11,9])
 
     # BLUE PLAY AT [3,5] KILLS WHITE STONE AT [4,5]
     # We don't find the dead white group because it's already been removed by
-    # the remove_dead_stones_after_move method, which was called by make_a_move.
-    manager.make_a_move(:blue, [3,5])
-    assert_equal points.get_point([4,5]), :empty
+    # the remove_dead_stones_after_move method, which was called by make_move.
+    processor.make_move(:blue, [3,5])
+    assert_equal stones.get_point([4,5]), :empty
     assert_equal analyzer.dead_groups?(:red), []
     assert_equal analyzer.dead_groups?(:white), []
 
-    manager.make_a_move(:red, [10,7])
-    manager.make_a_move(:white, [5,8])
-    manager.make_a_move(:blue, [10,9])
-    manager.make_a_move(:red, [10,8])
-    manager.make_a_move(:white, [7,10])
-    manager.make_a_move(:blue, [11,10])
+    processor.make_move(:red, [10,7])
+    processor.make_move(:white, [5,8])
+    processor.make_move(:blue, [10,9])
+    processor.make_move(:red, [10,8])
+    processor.make_move(:white, [7,10])
+    processor.make_move(:blue, [11,10])
 
     # RED PLAY AT [11,7] KILLS WHITE STONES AT [11,8] and [11,9]
     # We don't find the dead white group because it's already been removed by
-    # the remove_dead_stones_after_move method, which was called by make_a_move.
-    manager.make_a_move(:red, [11,7])
-    assert_equal points.get_point([11,8]), :empty
-    assert_equal points.get_point([11,9]), :empty
+    # the remove_dead_stones_after_move method, which was called by make_move.
+    processor.make_move(:red, [11,7])
+    assert_equal stones.get_point([11,8]), :empty
+    assert_equal stones.get_point([11,9]), :empty
     assert_equal analyzer.dead_groups?(:white), []
     assert_equal analyzer.dead_groups?(:blue), []
-
 
   end
 
 
   def test_find_one_eye_points
-    game = Game.new
-    board = game.board
-    analyzer = game.analyzer
-    points = board.points
 
-    set_test_groups(board,3)
+    board = BoardSpecs.new
+    stones = Stones.new("yes")
+    analyzer = GroupAnalyzer.new(stones, board)
+
+    set_test_groups(stones,3)
 
     eyes = analyzer.find_one_eye_points
     assert_equal eyes.class, Array
