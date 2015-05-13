@@ -31,15 +31,13 @@ end
 
 class MoveProcessor
 
-  def initialize
-    @stones = Stones.new "new"
-    @board = BoardSpecs.new
-    @analyzer = GroupAnalyzer.new(@stones, @board)
-    @legal_moves = LegalMovesFinder.new(@stones, @board, @analyzer)
-  end
+  attr_accessor :stones, :analyzer
 
   def process_client_move(move_data)
+    @board = BoardSpecs.new
     @stones = Stones.new move_data[:new_game]
+    @analyzer = GroupAnalyzer.new(@stones, @board)
+    @legal_moves = LegalMovesFinder.new(@stones, @board, @analyzer)
     @ai_players = AIPlayers.new(@legal_moves, @stones)
     @reset = :no
     red_move = move_data[:red_move]

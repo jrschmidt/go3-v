@@ -1,7 +1,6 @@
 # Tests for Game Analysis Methods
 
 require './go3.rb'
-require 'pry'
 
 class GameAnalysisTest < Test::Unit::TestCase
   include TestHelpers
@@ -428,9 +427,11 @@ class GameAnalysisTest < Test::Unit::TestCase
   def test_make_move_remove_dead_groups
 
     processor = MoveProcessor.new
-    board = BoardSpecs.new
     stones = Stones.new("yes")
+    processor.stones = stones
+    board = BoardSpecs.new
     analyzer = GroupAnalyzer.new(stones, board)
+    processor.analyzer = analyzer
 
     processor.make_move(:red, [3,4])
     processor.make_move(:white, [4,5])
