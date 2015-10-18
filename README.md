@@ -2,9 +2,9 @@
 ## Hexagonal 3-Player Go Game
  ![](sample1.png)
 
- I've always enjoyed the [game of Go](https://en.wikipedia.org/wiki/Go_%28game%29). I wondered about the possibility of playing a three player version. It was pretty obvious that this would not work on a traditional square board, where any stone would have at most 4 adjacent empty points. I was curious, however, to experiment with a 3-player game on a hexagonal board where each point has 6 neighbors. So I built this application to test the idea.
+I've always enjoyed the [game of Go](https://en.wikipedia.org/wiki/Go_%28game%29). I wondered about the possibility of playing a three player version. It was pretty obvious that this would not work on a traditional square board, where any stone would have at most 4 adjacent empty points. I was curious, however, to experiment with a 3-player game on a hexagonal board where each point has 6 neighbors. So I built this application to test the idea.
 
- The app uses a Ruby backend, running on Sinatra, to receive input from the user each time the user makes a move on the board, and returns a response containing moves by the other two players and a list of legal next moves for the user.
+The app uses a Ruby backend, running on Sinatra, to receive input from the user each time the user makes a move on the board, and returns a response containing moves by the other two players and a list of legal next moves for the user.
 
 At the front end, the application uses a "very thin client" approach. The client script, written with coffeescript, only does three things: draw the board on a canvas element, send the game point clicked to the server if user clicks on a legal move, and receive from the server a new set of legal moves.
 
