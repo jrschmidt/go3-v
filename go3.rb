@@ -4,8 +4,6 @@ require 'sinatra'
 
 require 'coffee-script'
 
-require 'pry'
-
 require 'json'
 
 set :server, %w[webrick thin mongrel]
@@ -31,11 +29,11 @@ end
 
 class MoveProcessor
 
-  attr_accessor :stones, :analyzer
+  attr_accessor :stones, :analyzer # (needed so tests can reset these attributes)
 
   def process_client_move(move_data)
-    @board = BoardSpecs.new
     @stones = Stones.new move_data[:new_game]
+    @board = BoardSpecs.new
     @analyzer = GroupAnalyzer.new(@stones, @board)
     @legal_moves = LegalMovesFinder.new(@stones, @board, @analyzer)
     @ai_players = AIPlayers.new(@legal_moves, @stones)
