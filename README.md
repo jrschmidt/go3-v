@@ -25,4 +25,4 @@ This will start the app at port 4533.
 
 View the app at `localhost:4533`.
 
-There is an online version of this app at [http://go3-toquima.rhcloud.com](http://go3-toquima.rhcloud.com).
+There is an online version of this app at [https://go3-h.herokuapp.com/](https://go3-h.herokuapp.com/).
