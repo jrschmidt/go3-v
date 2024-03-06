@@ -25,4 +25,4 @@ This will start the app at port 4533.
 
 View the app at `localhost:4533`.
 
-The Heroku online deployement of this app has been deactivated. A vercel deployement is currently being put together (Feb 2024).
+The Heroku online deployement of this app has been deactivated. A Vercel deployement is currently being put together (Feb 2024).

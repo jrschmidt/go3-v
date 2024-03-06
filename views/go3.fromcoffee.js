@@ -12,61 +12,68 @@
 // in Coffeescript. The main change is, since I now wish to deploy this app as a
 // serverless edge function on Vercel, game state between moves will now be persisted
 // client side. Also, the client code will be rewritten in modern Javascript, using the
-// original cCffeescript code as a template.
+// original Coffeescript code as a template.
 
 
-// class BoardStats
+class BoardStats {
+  
+  constructor () {
+    this.rowStart = [1,1,1,1,1,1,2,3,4,5,6]
+    this.rowEnd = [6,7,8,9,10,11,11,11,11,11,11]
+    
+    this.westToEast = [
+      [[1,1], [6,1]],
+      [[1,2], [7,2]],
+      [[1,3], [8,3]],
+      [[1,4], [9,4]],
+      [[1,5], [10,5]],
+      [[1,6], [11,6]],
+      [[2,7], [11,7]],
+      [[3,8], [11,8]],
+      [[4,9], [11,9]],
+      [[5,10], [11,10]],
+      [[6,11], [11,11]]
+    ]
+    
+    this.southwestToNortheast = [
+      [[1,6], [1,1]],
+      [[2,7], [2,1]],
+      [[3,8], [3,1]],
+      [[4,9], [4,1]],
+      [[5,10], [5,1]],
+      [[6,11], [6,1]],
+      [[7,11], [7,2]],
+      [[8,11], [8,3]],
+      [[9,11], [9,4]],
+      [[10,11], [10,5]],
+      [[11,11], [11,6]]
+    ]
+    
+    this.northwestToSoutheast = [
+      [[1,6], [6,11]],
+      [[1,5], [7,11]],
+      [[1,4], [8,11]],
+      [[1,3], [9,11]],
+      [[1,2], [10,11]],
+      [[1,1], [11,11]],
+      [[2,1], [11,10]],
+      [[3,1], [11,9]],
+      [[4,1], [11,8]],
+      [[5,1], [11,7]],
+      [[6,1], [11,6]]
+    ]
 
-//   constructor: (main_object) ->
-//     @controller = main_object
-
-//     @row_start = [1,1,1,1,1,1,2,3,4,5,6]
-//     @row_end = [6,7,8,9,10,11,11,11,11,11,11]
-
-//     @w_e = [ [[1,1], [6,1]],
-//             [[1,2], [7,2]],
-//             [[1,3], [8,3]],
-//             [[1,4], [9,4]],
-//             [[1,5], [10,5]],
-//             [[1,6], [11,6]],
-//             [[2,7], [11,7]],
-//             [[3,8], [11,8]],
-//             [[4,9], [11,9]],
-//             [[5,10], [11,10]],
-//             [[6,11], [11,11]] ]
-
-//     @sw_ne = [ [[1,6], [1,1]],
-//               [[2,7], [2,1]],
-//               [[3,8], [3,1]],
-//               [[4,9], [4,1]],
-//               [[5,10], [5,1]],
-//               [[6,11], [6,1]],
-//               [[7,11], [7,2]],
-//               [[8,11], [8,3]],
-//               [[9,11], [9,4]],
-//               [[10,11], [10,5]],
-//               [[11,11], [11,6]] ]
-
-//     @nw_se = [ [[1,6], [6,11]],
-//               [[1,5], [7,11]],
-//               [[1,4], [8,11]],
-//               [[1,3], [9,11]],
-//               [[1,2], [10,11]],
-//               [[1,1], [11,11]],
-//               [[2,1], [11,10]],
-//               [[3,1], [11,9]],
-//               [[4,1], [11,8]],
-//               [[5,1], [11,7]],
-//               [[6,1], [11,6]] ]
-
-
-
-// class CanvasHelper
-
-//   constructor: () ->
-//     @canvas = document.getElementById('go-board')
-//     @context = @canvas.getContext('2d')
-//     @board = new BoardStats()
+  }
+}
+  
+  
+  
+  // class CanvasHelper
+  
+  //   constructor: () ->
+  //     @canvas = document.getElementById('go-board')
+  //     @context = @canvas.getContext('2d')
+  //     @board = new BoardStats()
 //     @board_base = new BoardBase(this)
 //     @board_lines = new BoardLines(this)
 
@@ -93,8 +100,8 @@
 //     a = Math.floor((x-125+25*b)/50)
 //     in_bounds = false if b<1
 //     in_bounds = false if b>11
-//     in_bounds = false if a<@board.row_start[b-1]
-//     in_bounds = false if a>@board.row_end[b-1]
+//     in_bounds = false if a<@board.rowStart[b-1]
+//     in_bounds = false if a>@board.rowEnd[b-1]
 //     dx = Math.abs(x-@get_x([a,b]))
 //     dy = Math.abs(y-@get_y([a,b]))
 //     r2 = dx*dx+dy*dy
@@ -218,21 +225,21 @@
 //     @draw_lines()
 
 //   draw_lines: () ->
-//     @draw_w_e_lines()
-//     @draw_sw_ne_lines()
-//     @draw_nw_se_lines()
+//     @draw_westToEast_lines()
+//     @draw_southwestToNortheast_lines()
+//     @draw_northwestToSoutheast_lines()
 
 
-//   draw_w_e_lines: () ->
-//     @draw_line(@board.w_e[i][0], @board.w_e[i][1]) for i in [0..10]
+//   draw_westToEast_lines: () ->
+//     @draw_line(@board.westToEast[i][0], @board.westToEast[i][1]) for i in [0..10]
 
 
-//   draw_sw_ne_lines: () ->
-//     @draw_line(@board.sw_ne[i][0],@board.sw_ne[i][1]) for i in [0..10]
+//   draw_southwestToNortheast_lines: () ->
+//     @draw_line(@board.southwestToNortheast[i][0],@board.southwestToNortheast[i][1]) for i in [0..10]
 
 
-//   draw_nw_se_lines: () ->
-//     @draw_line(@board.nw_se[i][0],@board.nw_se[i][1]) for i in [0..10]
+//   draw_northwestToSoutheast_lines: () ->
+//     @draw_line(@board.northwestToSoutheast[i][0],@board.northwestToSoutheast[i][1]) for i in [0..10]
 
 
 //   draw_line: (beg,end) ->
@@ -283,7 +290,7 @@
 // get_init_legal_moves = () ->
 //   legal_moves = []
 //   for i in [0..10]
-//     for j in [@canvas_helper.board.row_start[i]..@canvas_helper.board.row_end[i]]
+//     for j in [@canvas_helper.board.rowStart[i]..@canvas_helper.board.rowEnd[i]]
 //       pp = []
 //       pp[0] = j
 //       pp[1] = i+1
