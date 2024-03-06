@@ -25,4 +25,4 @@ This will start the app at port 4533.
 
 View the app at `localhost:4533`.
 
-There is an online version of this app at [https://go3-h.herokuapp.com/](https://go3-h.herokuapp.com/).
+The Heroku online deployement of this app has been deactivated. A vercel deployement is currently being put together (Feb 2024).
