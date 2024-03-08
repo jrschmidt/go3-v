@@ -1,8 +1,12 @@
-//  * *  Go3 3-player hex shaped Go game client * *
-//              * *  2024 version * *
+//   * *  Go3  * *
+//
+//   3-player hexagonal Go game client
+//
+//   JR Schmidt
+//   2024 version (rewrite of legacy Coffeescript version)
 
 
-// A client for the Go3 Ruby project, an experimental 3-player Go game. The
+// A client for the Go3 Ruby project, an experimental 3-player hexagonal Go game. The
 // client script only does three things: draw the board on a canvas element, send the
 // game point clicked to the server if user clicks on a legal move, and receive
 // from the server a new set of legal moves along with randomly generated moves for
@@ -13,6 +17,10 @@
 // serverless edge function on Vercel, game state between moves will now be persisted
 // client side. Also, the client code will be rewritten in modern Javascript, using the
 // original Coffeescript code as a template.
+
+// The code is written using the `class` syntax because it was written when classes and
+// object oriented programming were popular. Coffescript incorporated the `class`
+// construct before it was added to javascript in ES6.
 
 
 class BoardStats {
@@ -67,110 +75,93 @@ class BoardStats {
 }
   
   
+class CanvasHelper {
+
+  constructor () {
+    this.canvas = document.getElementById('go-board')
+    this.context = this.canvas.getContext('2d')
+    this.board = new BoardStats()
+    this.boardBase = new BoardBase(this)
+    this.boardLines = new BoardLines(this)
+  }
+
+  getX (ab) {
+    return 150 + 50*ab[0] - 25*ab[1]
+  }
   
-  // class CanvasHelper
+  getY (ab) {
+    return 6 + 44*ab[1]
+  }
   
-  //   constructor: () ->
-  //     @canvas = document.getElementById('go-board')
-  //     @context = @canvas.getContext('2d')
-  //     @board = new BoardStats()
-//     @board_base = new BoardBase(this)
-//     @board_lines = new BoardLines(this)
+  getPoint (x,y) {
+    // First, use rectangular coordinates to determine which gameboard point to
+    // check, then use the radius from the pixel at the center of the gameboard point
+    // to see if it's close enough to map the mouse click to that point. Return the 
+    // gameboard coordinates of the point if it is valid, else return an empty array.
+    
+    let point = []
+    let a = -1
+    let b = -1
+    let r2 = 999
+    let inBounds = true
 
+    b = Math.floor((y-28)/44)+1
+    a = Math.floor((x-125+25*b)/50)
+    if ( b<1 ) { inBounds = false }
+    if ( b>11 ) { inBounds = false }
+    if ( a<this.board.rowStart[b-1]) { inBounds = false }
+    if ( a>this.board.rowEnd[b-1] ) { inBounds = false }
 
-//   get_x: (ab) ->
-//     return 150 + 50*ab[0] - 25*ab[1]
+    let dx = Math.abs(x-this.getX([a,b]))
+    let dy = Math.abs(y-this.getY([a,b]))
+    r2 = dx*dx+dy*dy
+    if  (r2>530 ) { inBounds = false }
 
+    if ( inBounds ) { const point = [a,b] }
+    return point
+  }
 
-//   get_y: (ab) ->
-//     return 6 + 44*ab[1]
+  getRgb (color) {
+    const colorCodes = {
+      red: 'cc3333',
+      white: 'f0f0f0',
+      blue: '5050cc'
+    }
+    return colorCodes[color]
+  }
 
+  drawStone (ab, color) {
+    this.context.strokeStyle = "#000000"
+    this.context.lineWidth = 2
+    this.context.fillStyle = this.getRgb(color)
+    this.context.beginPath()
+    this.context.arc(this.getX(ab),this.getY(ab),17,0,2*Math.PI,false)
+    this.context.fill()
+    this.context.stroke()
+    this.context.closePath()
+    this.context.beginPath()
+    this.context.strokeStyle = "#cc9933"
+    this.context.arc(this.getX(ab),this.getY(ab),19,0,2*Math.PI,false)
+    this.context.stroke()
+    this.context.closePath()
+  }
 
-//   get_point: (x,y) ->
-//     # First, use rectangular coordinates to determine which gameboard point to
-//     # check, then use the radius from the pixel at the center of the gameboard point
-//     # to see if it's close enough to map the mouse click to that point.
+  redraw (stones) {
+    this.boardBase.draw_base()
+    this.boardLines.draw_lines()
+    
+    ['red', 'white', 'blue'].forEach (color) => {
+      stones[color].forEach (point) => {
+        this.drawStone(point, color)
+      }
+    }
+  }
 
-//     point = []
-//     a = -1
-//     b = -1
-//     r2 = 999
-//     in_bounds = true
-//     b = Math.floor((y-28)/44)+1
-//     a = Math.floor((x-125+25*b)/50)
-//     in_bounds = false if b<1
-//     in_bounds = false if b>11
-//     in_bounds = false if a<@board.rowStart[b-1]
-//     in_bounds = false if a>@board.rowEnd[b-1]
-//     dx = Math.abs(x-@get_x([a,b]))
-//     dy = Math.abs(y-@get_y([a,b]))
-//     r2 = dx*dx+dy*dy
-//     in_bounds = false if r2>530 #(if radius > 23)
-//     point = [a,b] if (in_bounds == true)
-//     return point
-
-
-//   draw_stone: (ab,color) ->
-//     @context.strokeStyle = "#000000"
-//     @context.lineWidth = 2
-//     @context.fillStyle = @get_rgb(color)
-//     @context.beginPath()
-//     @context.arc(@get_x(ab),@get_y(ab),17,0,2*Math.PI,false)
-//     @context.fill()
-//     @context.stroke()
-//     @context.closePath()
-//     @context.beginPath()
-//     @context.strokeStyle = "#cc9933"
-//     @context.arc(@get_x(ab),@get_y(ab),19,0,2*Math.PI,false)
-//     @context.stroke()
-//     @context.closePath()
-
-
-//   get_rgb: (color) ->
-//     switch color
-//       when "red"
-//         clr = "#cc3333"
-//       when "white"
-//         clr = "#f0f0f0"
-//       when "blue"
-//         clr = "#5050cc"
-//     return clr
-
-
-//   remove_stone: (ab) ->
-//     xx = @get_x(ab)
-//     yy = @get_y(ab)
-//     @context.beginPath()
-//     @context.fillStyle = "#cc9933"
-//     @context.arc(xx,yy,19,0,2*Math.PI,false)
-//     @context.fill()
-//     @context.closePath()
-//     @context.beginPath()
-//     @context.strokeStyle = "#000000"
-//     @context.lineWidth = 3
-//     @context.moveTo(xx-11,yy-19)
-//     @context.lineTo(xx+11,yy+19)
-//     @context.stroke()
-//     @context.moveTo(xx+11,yy-19)
-//     @context.lineTo(xx-11,yy+19)
-//     @context.stroke()
-//     @context.moveTo(xx-20,yy)
-//     @context.lineTo(xx+20,yy)
-//     @context.stroke()
-//     @context.closePath()
-
-
-//   redraw: (stones) ->
-//     @board_base.draw_base()
-//     @board_lines.draw_lines()
-//     for color, points of stones
-//       for ab in points
-//         @draw_stone(ab,color)
-
-
-
-// class BoardBase
-
+}
+  
+  
+  // class BoardBase
+  
 //   constructor: (board_canvas) ->
 //     @b_canvas = board_canvas
 //     @board = @b_canvas.board
@@ -248,8 +239,8 @@ class BoardStats {
 //     context.strokeStyle = "#000000"
 //     context.lineWidth = 3
 //     context.beginPath()
-//     context.moveTo(@b_canvas.get_x(beg),@b_canvas.get_y(beg))
-//     context.lineTo(@b_canvas.get_x(end),@b_canvas.get_y(end))
+//     context.moveTo(@b_canvas.getX(beg),@b_canvas.getY(beg))
+//     context.lineTo(@b_canvas.getX(end),@b_canvas.getY(end))
 //     context.stroke()
 //     context.closePath()
 
@@ -265,9 +256,9 @@ class BoardStats {
 //   py = e.pageY
 //   x = px-dx
 //   y = py-dy
-//   point = @canvas_helper.get_point(x,y)
+//   point = @canvas_helper.getPoint(x,y)
 //   if legal_move(point)
-//     @canvas_helper.draw_stone(point,"red")
+//     @canvas_helper.drawStone(point,"red")
 //     obj_out = {red_move: point, new_game: @newgame}
 //     msg_out = JSON.stringify(obj_out)
 //     xhr = new XMLHttpRequest()
@@ -300,8 +291,8 @@ class BoardStats {
 
 // add_stones = (response) ->
 //   if response.stones == undefined
-//     @canvas_helper.draw_stone(response.white_move, "white")
-//     @canvas_helper.draw_stone(response.blue_move, "blue")
+//     @canvas_helper.drawStone(response.white_move, "white")
+//     @canvas_helper.drawStone(response.blue_move, "blue")
 //   else
 //     stones = JSON.parse(response.stones)
 //     reset(stones)
