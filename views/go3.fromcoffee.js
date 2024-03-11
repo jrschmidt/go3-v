@@ -147,75 +147,78 @@ class CanvasHelper {
   }
 
   redraw (stones) {
-    this.boardBase.draw_base()
-    this.boardLines.draw_lines()
+    this.boardBase.drawBase()
+    this.boardLines.drawLines()
     
-    ['red', 'white', 'blue'].forEach (color) => {
-      stones[color].forEach (point) => {
+    ['red', 'white', 'blue'].forEach((color) => {
+      stones[color].forEach ((point) => {
         this.drawStone(point, color)
-      }
-    }
+      })
+    })
   }
 
 }
+
+
+// Can we eliminate bCanvas and just use boardCanvas? (also Boardlines class)
+class BoardBase {
+
+  constructor (boardCanvas) {
+    this.bCanvas = boardCanvas
+    this.board = this.bCanvas.board
+    this.drawBase()
+  }
+  
+  drawBase () {
+    canvas = document.getElementById('go-board')
+    this.context = canvas.getContext('2d')
+    this.drawBaseHex()
+    this.drawBaseMargin()
+  }
+  
+  drawBaseHex () {
+    this.context.strokeStyle = "#000000"
+    this.context.lineWidth = 5
+    this.context.fillStyle = "#cc9933"
+    this.context.beginPath()
+    this.context.moveTo(157,26)
+    this.context.lineTo(443,26)
+    this.context.lineTo(576,270)
+    this.context.lineTo(443,514)
+    this.context.lineTo(157,514)
+    this.context.lineTo(25,270)
+    this.context.lineTo(157,26)
+    this.context.fill()
+    this.context.stroke()
+    this.context.closePath()
+  }
+  
+  drawBaseMargin () {
+    this.context.strokeStyle = "#000000"
+    this.context.lineWidth = 3
+    this.context.beginPath()
+    this.context.moveTo(163,34)
+    this.context.lineTo(437,34)
+    this.context.lineTo(567,270)
+    this.context.lineTo(437,506)
+    this.context.lineTo(163,506)
+    this.context.lineTo(33,270)
+    this.context.lineTo(163,34)
+    this.context.stroke()
+    this.context.closePath()
+  }
+  
+}
   
   
-  // class BoardBase
+  // class BoardLines
   
-//   constructor: (board_canvas) ->
-//     @b_canvas = board_canvas
-//     @board = @b_canvas.board
-//     @draw_base()
+  //   constructor: (boardCanvas) ->
+//     @bCanvas = boardCanvas
+//     @board = @bCanvas.board
+//     @drawLines()
 
-
-//   draw_base: () ->
-//     canvas = document.getElementById('go-board')
-//     @context = canvas.getContext('2d')
-//     @draw_base_hex()
-//     @draw_base_margin()
-
-
-//   draw_base_hex: () ->
-//     @context.strokeStyle = "#000000"
-//     @context.lineWidth = 5
-//     @context.fillStyle = "#cc9933"
-//     @context.beginPath()
-//     @context.moveTo(157,26)
-//     @context.lineTo(443,26)
-//     @context.lineTo(576,270)
-//     @context.lineTo(443,514)
-//     @context.lineTo(157,514)
-//     @context.lineTo(25,270)
-//     @context.lineTo(157,26)
-//     @context.fill()
-//     @context.stroke()
-//     @context.closePath()
-
-
-//   draw_base_margin: () ->
-//     @context.strokeStyle = "#000000"
-//     @context.lineWidth = 3
-//     @context.beginPath()
-//     @context.moveTo(163,34)
-//     @context.lineTo(437,34)
-//     @context.lineTo(567,270)
-//     @context.lineTo(437,506)
-//     @context.lineTo(163,506)
-//     @context.lineTo(33,270)
-//     @context.lineTo(163,34)
-//     @context.stroke()
-//     @context.closePath()
-
-
-
-// class BoardLines
-
-//   constructor: (board_canvas) ->
-//     @b_canvas = board_canvas
-//     @board = @b_canvas.board
-//     @draw_lines()
-
-//   draw_lines: () ->
+//   drawLines: () ->
 //     @draw_westToEast_lines()
 //     @draw_southwestToNortheast_lines()
 //     @draw_northwestToSoutheast_lines()
@@ -239,8 +242,8 @@ class CanvasHelper {
 //     context.strokeStyle = "#000000"
 //     context.lineWidth = 3
 //     context.beginPath()
-//     context.moveTo(@b_canvas.getX(beg),@b_canvas.getY(beg))
-//     context.lineTo(@b_canvas.getX(end),@b_canvas.getY(end))
+//     context.moveTo(@bCanvas.getX(beg),@bCanvas.getY(beg))
+//     context.lineTo(@bCanvas.getX(end),@bCanvas.getY(end))
 //     context.stroke()
 //     context.closePath()
 
