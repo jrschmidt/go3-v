@@ -211,42 +211,51 @@ class BoardBase {
 }
   
   
-  // class BoardLines
+class BoardLines {
   
-  //   constructor: (boardCanvas) ->
-//     @bCanvas = boardCanvas
-//     @board = @bCanvas.board
-//     @drawLines()
+  constructor (boardCanvas) {
+    this.bCanvas = boardCanvas
+    this.board = this.bCanvas.board
+    this.drawLines()
+  }
+  
+  drawLines () {
+    this.drawWestToEastLines()
+    this.drawSouthwestToNortheastLines()
+    this.drawNorthwestToSoutheastLines()
+  }
 
-//   drawLines: () ->
-//     @draw_westToEast_lines()
-//     @draw_southwestToNortheast_lines()
-//     @draw_northwestToSoutheast_lines()
-
-
-//   draw_westToEast_lines: () ->
-//     @draw_line(@board.westToEast[i][0], @board.westToEast[i][1]) for i in [0..10]
-
-
-//   draw_southwestToNortheast_lines: () ->
-//     @draw_line(@board.southwestToNortheast[i][0],@board.southwestToNortheast[i][1]) for i in [0..10]
-
-
-//   draw_northwestToSoutheast_lines: () ->
-//     @draw_line(@board.northwestToSoutheast[i][0],@board.northwestToSoutheast[i][1]) for i in [0..10]
-
-
-//   draw_line: (beg,end) ->
-//     canvas = document.getElementById('go-board')
-//     context = canvas.getContext('2d')
-//     context.strokeStyle = "#000000"
-//     context.lineWidth = 3
-//     context.beginPath()
-//     context.moveTo(@bCanvas.getX(beg),@bCanvas.getY(beg))
-//     context.lineTo(@bCanvas.getX(end),@bCanvas.getY(end))
-//     context.stroke()
-//     context.closePath()
-
+  drawWestToEastLines () {
+    [0,1,2,3,4,5,6,7,8,9,10].forEach((i) => {
+      this.drawLine(this.board.westToEast[i][0], this.board.westToEast[i][1])
+    })
+  }
+  
+  drawSouthwestToNortheastLines () {
+    [0,1,2,3,4,5,6,7,8,9,10].forEach((i) => {
+      this.drawLine(this.board.southwestToNortheast[i][0], this.board.southwestToNortheast[i][1])
+    })
+  }
+  
+  drawNorthwestToSoutheastLines () {
+    [0,1,2,3,4,5,6,7,8,9,10].forEach((i) => {
+      this.drawLine(this.board.northwestToSoutheast[i][0],this.board.northwestToSoutheast[i][1])
+    })
+  }
+  
+  drawLine (beg, end) {
+    canvas = document.getElementById('go-board')
+    context = canvas.getContext('2d')
+    context.strokeStyle = "#000000"
+    context.lineWidth = 3
+    context.beginPath()
+    context.moveTo(this.bCanvas.getX(beg),this.bCanvas.getY(beg))
+    context.lineTo(this.bCanvas.getX(end),this.bCanvas.getY(end))
+    context.stroke()
+    context.closePath()
+  }
+  
+}
 
 
 // # GLOBAL level
