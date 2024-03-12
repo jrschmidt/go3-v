@@ -260,68 +260,81 @@ class BoardLines {
 
 // # GLOBAL level
 
-// @mousedown = (e) ->
-//   @canvas = document.getElementById('go-board')
-//   dx = @canvas.offsetLeft
-//   dy = @canvas.offsetTop
-//   px = e.pageX
-//   py = e.pageY
-//   x = px-dx
-//   y = py-dy
-//   point = @canvas_helper.getPoint(x,y)
-//   if legal_move(point)
-//     @canvas_helper.drawStone(point,"red")
-//     obj_out = {red_move: point, new_game: @newgame}
-//     msg_out = JSON.stringify(obj_out)
-//     xhr = new XMLHttpRequest()
-//     url = "/make-a-move"
-//     xhr.open('POST',url)
-//     xhr.onreadystatechange = ->
-//       if (xhr.readyState == 4 && xhr.status == 200)
-//         msg_in = xhr.responseText
-//         response = JSON.parse(msg_in)
-//         add_stones(response)
-//         update_legal_moves(response.legal_red_moves)
-//     xhr.send(msg_out)
-//     @newgame = "no"
+this.mousedown = (e) => {
+  this.canvas = document.getElementById('go-board')
+  const dx = this.canvas.offsetLeft
+  const dy = this.canvas.offsetTop
+  const px = e.pageX
+  const py = e.pageY
+  const x = px-dx
+  const y = py-dy
+  const point = this.canvasHelper.getPoint(x,y)
+  if ( legalMove(point) ) {
+    this.canvasHelper.drawStone(point,"red")
+    const objOut = {red_move: point, new_game: this.newgame}
+    constmsgOut = JSON.stringify(objOut)
+    const xhr = new XMLHttpRequest()
+    const url = "/make-a-move"
+    xhr.open('POST',url)
+    xhr.onreadystatechange = () => {
+      if (xhr.readyState === 4 && xhr.status === 200) {
+        const msgIn = xhr.responseText
+        const response = JSON.parse(msgIn)
+        addStones(response)
+        updateLegalMoves(response.legal_red_moves)
+      }
+    }
+    xhr.send(msgOut)
+    this.newgame = "no"
+  }
+}
 
 
-// legal_move = (point) ->
-//   return @legal_moves.some (p) -> p[0] == point[0] and p[1] == point[1]
+const legalMove = (point) => {
+  return this.legalMoves.some((p) => p[0] === point[0] && p[1] === point[1] )
+}
 
 
-// get_init_legal_moves = () ->
-//   legal_moves = []
-//   for i in [0..10]
-//     for j in [@canvas_helper.board.rowStart[i]..@canvas_helper.board.rowEnd[i]]
-//       pp = []
-//       pp[0] = j
-//       pp[1] = i+1
-//       legal_moves.push(pp)
-//   return legal_moves
+const getInitLegalMoves = () => {
+  let legalMoves = []
+  [0,1,2,3,4,5,6,7,8,9,10].forEach((i) => {
+    for (let j = this.canvasHelper.board.rowStart[i]; j <= this.canvasHelper.board.rowEnd[i]; j++) {
+      let pp = []
+      pp[0] = j
+      pp[1] = i+1
+      legalMoves.push(pp)
+    }
+  })
+  return legalMoves
+}
 
 
-// add_stones = (response) ->
-//   if response.stones == undefined
-//     @canvas_helper.drawStone(response.white_move, "white")
-//     @canvas_helper.drawStone(response.blue_move, "blue")
-//   else
-//     stones = JSON.parse(response.stones)
-//     reset(stones)
+const addStones = (response) => {
+  if ( response.stones == undefined ) {
+    this.canvasHelper.drawStone(response.white_move, "white")
+    this.canvasHelper.drawStone(response.blue_move, "blue")
+  }
+  else {
+    const stones = JSON.parse(response.stones)
+    reset(stones)
+  }
+}
 
 
-// reset = (stones) ->
-//   @canvas_helper.redraw(stones)
+const reset = (stones) => {
+  this.canvasHelper.redraw(stones)
+}
 
 
-// update_legal_moves = (legal_moves) ->
-//   @legal_moves = legal_moves
+const updateLegalMoves = (legalMoves) => {
+  this.legalMoves = legalMoves
+}
 
 
 const start = () => {
-  let newgame = "yes"
-  helper = new CanvasHelper
-  let legalMoves = getInitLegalMoves()
+  this.newgame = "yes"
+  this.canvasHelper = new CanvasHelper
+  this.legalMoves = getInitLegalMoves()
 }
 
 
