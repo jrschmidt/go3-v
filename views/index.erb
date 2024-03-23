@@ -102,7 +102,10 @@ class CanvasHelper {
     r2 = dx*dx+dy*dy
     if  (r2>530 ) { inBounds = false }
 
-    if ( inBounds ) { const point = [a,b] }
+    if ( inBounds ) {
+      point = [a,b]
+    }
+
     return point
   }
 
@@ -254,7 +257,7 @@ this.mousedown = (e) => {
   if ( legalMove(point) ) {
     this.canvasHelper.drawStone(point,"red")
     const objOut = {red_move: point, new_game: this.newgame}
-    constmsgOut = JSON.stringify(objOut)
+    const msgOut = JSON.stringify(objOut)
     const xhr = new XMLHttpRequest()
     const url = "/make-a-move"
     xhr.open('POST',url)
