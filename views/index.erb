@@ -111,9 +111,9 @@ class CanvasHelper {
 
   getRgb (color) {
     const colorCodes = {
-      red: 'cc3333',
-      white: 'f0f0f0',
-      blue: '5050cc'
+      red: '#cc3333',
+      white: '#f0f0f0',
+      blue: '#5050cc'
     }
     return colorCodes[color]
   }
@@ -123,13 +123,13 @@ class CanvasHelper {
     this.context.lineWidth = 2
     this.context.fillStyle = this.getRgb(color)
     this.context.beginPath()
-    this.context.arc(this.getX(ab),this.getY(ab),17,0,2*Math.PI,false)
+    this.context.arc(this.getX(ab), this.getY(ab), 17, 0, 2 * Math.PI, false)
     this.context.fill()
     this.context.stroke()
     this.context.closePath()
     this.context.beginPath()
     this.context.strokeStyle = "#cc9933"
-    this.context.arc(this.getX(ab),this.getY(ab),19,0,2*Math.PI,false)
+    this.context.arc(this.getX(ab), this.getY(ab), 19, 0, 2 * Math.PI, false)
     this.context.stroke()
     this.context.closePath()
   }
