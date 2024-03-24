@@ -135,11 +135,14 @@ class CanvasHelper {
   }
 
   redraw (stones) {
+    const colors = ['red', 'white', 'blue']
+
     this.boardBase.drawBase()
     this.boardLines.drawLines()
     
-    ['red', 'white', 'blue'].forEach((color) => {
-      stones[color].forEach ((point) => {
+    colors.forEach( (color) => {
+      const points = stones[color]
+      points.forEach ( (point) => {
         this.drawStone(point, color)
       })
     })
