@@ -248,6 +248,8 @@ class BoardLines {
 }
 
 
+// Global scope items
+
 this.mousedown = (e) => {
   this.canvas = document.getElementById('go-board')
   const dx = this.canvas.offsetLeft
@@ -299,14 +301,8 @@ const getInitLegalMoves = () => {
 
 
 const addStones = (response) => {
-  if ( response.stones == undefined ) {
-    this.canvasHelper.drawStone(response.white_move, "white")
-    this.canvasHelper.drawStone(response.blue_move, "blue")
-  }
-  else {
-    const stones = JSON.parse(response.stones)
-    reset(stones)
-  }
+  const stones = JSON.parse(response.stones)
+  reset(stones)
 }
 
 

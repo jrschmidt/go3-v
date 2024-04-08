@@ -39,7 +39,8 @@ class MoveProcessor
     blue_move = @ai_players.get_move :blue
     make_move :blue, blue_move
     legal_red_moves = @legal_moves.find_legal_moves :red, @stones
-    return build_response white_move, blue_move, legal_red_moves
+    stones = @stones.values
+    return build_response stones, white_move, blue_move, legal_red_moves
   end
 
   def make_move(color, point)
@@ -63,12 +64,12 @@ class MoveProcessor
     end
   end
 
-  def build_response(white, blue, legal_red)
+  def build_response(stones, white, blue, legal_red)
     response = {
+      stones: @stones.get_json,
       white_move: white,
       blue_move: blue,
       legal_red_moves: legal_red }
-    response[:stones] = @stones.get_json if @reset == :yes
     return response.to_json
   end
 
