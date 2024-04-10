@@ -302,6 +302,7 @@ const getInitLegalMoves = () => {
 
 const addStones = (response) => {
   const stones = JSON.parse(response.stones)
+  sessionStorage.setItem('stones', JSON.stringify(stones))
   reset(stones)
 }
 
