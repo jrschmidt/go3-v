@@ -259,9 +259,11 @@ this.mousedown = (e) => {
   const x = px-dx
   const y = py-dy
   const point = this.canvasHelper.getPoint(x,y)
-  if ( legalMove(point) ) {
-    this.canvasHelper.drawStone(point,"red")
-    const objOut = {red_move: point, new_game: this.newgame}
+
+  if ( this.legalMoves.some((p) => p[0] === point[0] && p[1] === point[1]) ) {
+    this.stones['red'].push(point)
+    this.canvasHelper.drawStone(point, "red")
+    const objOut = {red_move: point, stones: this.stones}
     const msgOut = JSON.stringify(objOut)
     const xhr = new XMLHttpRequest()
     const url = "/make-a-move"
@@ -270,23 +272,19 @@ this.mousedown = (e) => {
       if (xhr.readyState === 4 && xhr.status === 200) {
         const msgIn = xhr.responseText
         const response = JSON.parse(msgIn)
-        addStones(response)
-        updateLegalMoves(response.legal_red_moves)
+        this.stones = JSON.parse(response.stones)
+        this.canvasHelper.redraw(this.stones)
+        this.legalMoves = response.legal_red_moves
       }
     }
     xhr.send(msgOut)
-    this.newgame = "no"
   }
-}
-
-
-const legalMove = (point) => {
-  return this.legalMoves.some((p) => p[0] === point[0] && p[1] === point[1] )
 }
 
 
 const getInitLegalMoves = () => {
   const zeroToTen = [0,1,2,3,4,5,6,7,8,9,10]
+
   let legalMoves = []
   for (const i of zeroToTen) {
     for (let j = this.canvasHelper.board.rowStart[i]; j <= this.canvasHelper.board.rowEnd[i]; j++) {
@@ -300,29 +298,13 @@ const getInitLegalMoves = () => {
 }
 
 
-const addStones = (response) => {
-  const stones = JSON.parse(response.stones)
-  sessionStorage.setItem('stones', JSON.stringify(stones))
-  reset(stones)
-}
-
-
-const reset = (stones) => {
-  this.canvasHelper.redraw(stones)
-}
-
-
-const updateLegalMoves = (legalMoves) => {
-  this.legalMoves = legalMoves
-}
-
-
 const start = () => {
-  this.newgame = "yes"
+  const stonesEmptyBoard = {red: [], white: [], blue: []}
+
+  this.stones = stonesEmptyBoard
   this.canvasHelper = new CanvasHelper
   this.legalMoves = getInitLegalMoves()
 }
-
 
 
 window.onload = start

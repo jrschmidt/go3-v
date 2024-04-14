@@ -14,9 +14,9 @@ end
 
 post '/make-a-move' do
   msg_in = request.body.read
-  move_data = JSON.parse msg_in, :symbolize_names => true
+  request_data = JSON.parse msg_in, :symbolize_names => true
   @move_processor = MoveProcessor.new
-  str = @move_processor.process_client_move move_data
+  str = @move_processor.process_client_move request_data
   return str
 end
 
@@ -25,14 +25,14 @@ class MoveProcessor
 
   attr_accessor :stones, :analyzer # (needed so tests can reset these attributes)
 
-  def process_client_move(move_data)
-    @stones = Stones.new move_data[:new_game]
+  def process_client_move(request_data)
+    @stones = Stones.new request_data[:stones]
     @board = BoardSpecs.new
     @analyzer = GroupAnalyzer.new(@stones, @board)
     @legal_moves = LegalMovesFinder.new(@stones, @board, @analyzer)
     @ai_players = AIPlayers.new(@legal_moves, @stones)
     @reset = :no
-    red_move = move_data[:red_move]
+    red_move = request_data[:red_move]
     make_move :red, red_move
     white_move = @ai_players.get_move :white
     make_move :white, white_move
@@ -117,48 +117,23 @@ class Stones < PointSet
 
   attr_accessor :values
 
-  def initialize(newgame)
-    @persist = GamePersist.new
-    if newgame == "yes"
+  def initialize(stones)
       @values = []
-    else
-      @values = @persist.read_data
-    end
+      [:red, :white, :blue].each do |color|
+        stones[color].each do |point|
+          @values << {point: point, value: color}
+        end
+      end
   end
 
   def place_stone(color, point)
     set_point point, color
-    @persist.save_data @values
   end
 
   def get_json
     rwb = {red: [], white: [], blue: []}
     @values.each {|pt| rwb[pt[:value]] << pt[:point]}
     return rwb.to_json
-  end
-
-end
-
-
-class GamePersist
-
-  def initialize
-    @filename = "game.json"
-  end
-
-  def read_data
-    str = File.read @filename
-    jsn = JSON.parse str, :symbolize_names => true
-    points_array = jsn[:stones]
-    points_array.map! {|pt| {point: pt[:point], value: pt[:value].to_sym} }
-    return points_array
-  end
-
-  def save_data(data)
-    File.open(@filename, "w") do |f|
-      pts = {stones: data}
-      f.puts pts.to_json
-    end
   end
 
 end
